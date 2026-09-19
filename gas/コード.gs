@@ -12,6 +12,11 @@
  * 置きかた・デプロイのしかたは 設置手順.md を参照。
  */
 
+// 書き込み先のスプレッドシート「芸能労災 投稿記録」のID。
+// IDで指定しているので、このスクリプトをスプレッドシートから開いても、
+// 単独のプロジェクトとして作っても、同じように動く。
+var SHEET_ID = '1GgROCjiaK5QKzroyMtErOlnb7PllQqDAClps8GdVM80';
+
 var SHEET_NAME = '投稿記録';
 var MAX_PER_DAY = 60;          // 1日にこのシートへ入る行数の上限
 var HEADER = ['受付日時', '投稿日', '媒体', '投稿URL', '担当者', '媒体キー'];
@@ -108,7 +113,7 @@ function validate(d) {
 
 
 function sheet() {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var ss = SpreadsheetApp.openById(SHEET_ID);
   var sh = ss.getSheetByName(SHEET_NAME);
   if (!sh) {
     sh = ss.insertSheet(SHEET_NAME);
@@ -148,6 +153,7 @@ function cut(s, n) {
 
 /** デプロイ前の動作確認用。エディタでこれを実行すると、見出し行が作られる。 */
 function 準備() {
-  sheet();
-  SpreadsheetApp.getActiveSpreadsheet().toast('準備できました', '投稿デスク', 5);
+  var sh = sheet();
+  Logger.log('準備できました。シート「' + sh.getName() + '」の '
+    + sh.getLastRow() + '行目まで入っています。');
 }
