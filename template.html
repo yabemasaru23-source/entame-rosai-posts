@@ -340,13 +340,25 @@ footer{margin-top:40px; padding-top:16px; border-top:1px solid var(--line);
 
   function push(rec, done){
     if (!DATA.endpoint) { done(false); return; }
-    // Apps Script は CORS を返さないので no-cors で送る。
-    // 返事は読めないため、少し待ってから読み直して結果を確かめる。
+    var id = recKey(rec.date, rec.key);
+    var tries = 0;
+    // Apps Script は CORS を返さないので no-cors で送る＝返事が読めない。
+    // そこで、記録表に載ったかどうかを読み直して確かめる。
+    // 1回だけだと間に合わないことがある（実測：1.5秒では載っていなかった）ので、
+    // 載るまで何度か見に行く。
+    function check(){
+      tries++;
+      pull(function(){
+        if (shared[id]) { done(true); return; }
+        if (tries >= 4) { done(false); return; }
+        setTimeout(check, 2500);
+      });
+    }
     fetch(DATA.endpoint, {
       method: 'POST', mode: 'no-cors',
       headers: {'Content-Type': 'text/plain;charset=utf-8'},
       body: JSON.stringify(rec)
-    }).then(function(){ setTimeout(function(){ pull(function(){ done(true); }); }, 1500); },
+    }).then(function(){ setTimeout(check, 1500); },
       function(){ done(false); });
   }
 
@@ -492,7 +504,7 @@ footer{margin-top:40px; padding-top:16px; border-top:1px solid var(--line);
       var mine = store.log[id];           // この端末の控え
       var rec = srv || mine;
 
-      if (rec) {
+      if (rec && !box.editing) {
         var done = el('div', 'saved');
         done.appendChild(el('b', null, '投稿しました'));
         done.appendChild(document.createTextNode('　'));
@@ -502,9 +514,14 @@ footer{margin-top:40px; padding-top:16px; border-top:1px solid var(--line);
         done.appendChild(el('div', 'who',
           (rec.who || '担当者未記入') + '　' + rec.at + '　'
           + (srv ? '共有ずみ' : (DATA.endpoint ? '送信中／この端末だけ' : 'この端末だけ'))));
-        if (!srv) {
-          // 共有されていないものだけ取り消せる。
-          // 共有ずみの行はスプレッドシートが正なので、ここからは動かさない
+        if (srv) {
+          // URLを貼り間違えたときのやり直し。同じ日・同じ媒体なので記録表の行が書き換わる
+          var fix = el('button', null, '貼り直す');
+          fix.addEventListener('click', function(){
+            box.editing = true; render();
+          });
+          done.appendChild(fix);
+        } else {
           var undo = el('button', null, '取り消す');
           undo.addEventListener('click', function(){
             delete store.log[id]; persist(); render(); dock();
@@ -520,16 +537,25 @@ footer{margin-top:40px; padding-top:16px; border-top:1px solid var(--line);
       cardEl.dataset.done = '0';
 
       var wrap = el('div', 'save');
-      wrap.appendChild(el('h3', null, '投稿したら、URLを貼って保存'));
+      wrap.appendChild(el('h3', null, box.editing ? '正しいURLを貼り直す'
+                                                  : '投稿したら、URLを貼って保存'));
       var row = el('div', 'row');
       var url = document.createElement('input');
       url.type = 'url'; url.placeholder = '投稿のURLを貼る';
       url.setAttribute('inputmode', 'url');
+      if (box.editing && rec) url.value = rec.url;
       var who = document.createElement('input');
       who.className = 'who'; who.type = 'text';
       who.placeholder = '担当者名'; who.value = store.who || '';
       var btn = el('button', null, '保存');
       row.appendChild(url); row.appendChild(who); row.appendChild(btn);
+      if (box.editing) {
+        var cancel = el('button', null, 'やめる');
+        cancel.style.background = 'transparent';
+        cancel.style.color = 'var(--sub)';
+        cancel.addEventListener('click', function(){ box.editing = false; render(); });
+        row.appendChild(cancel);
+      }
       wrap.appendChild(row);
       var msg = el('p', 'msg');
       wrap.appendChild(msg);
@@ -545,6 +571,10 @@ footer{margin-top:40px; padding-top:16px; border-top:1px solid var(--line);
         };
         // まず端末に控える。共有に失敗しても記録が消えないようにするため
         store.log[id] = rec2;
+        box.editing = false;
+        // 記録表の古い行は、読み直すまで残っている。
+        // ここで消しておかないと、貼り直した直後に前のURLが表示される
+        delete shared[id];
         if (!persist() && !DATA.endpoint) {
           msg.className = 'msg';
           msg.textContent = 'この端末には保存できませんでした。URLを直接お送りください';
