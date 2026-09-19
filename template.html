@@ -98,7 +98,49 @@ details.alt pre{
   background:var(--bg); border:1px solid var(--line); border-radius:8px; padding:10px; margin:8px 0 0;
 }
 .posted{margin:10px 0 0; font-size:.8rem}
-.posted a{color:var(--accent)}
+.posted a{color:var(--accent); word-break:break-all}
+.save{
+  margin:12px 0 0; padding:12px; border:1px dashed var(--line);
+  border-radius:8px; background:var(--bg);
+}
+.save h3{font-size:.8rem; margin:0 0 8px; color:var(--sub); font-weight:600}
+.save .row{display:flex; gap:8px; flex-wrap:wrap}
+.save input{
+  flex:1 1 220px; min-width:0; font:inherit; font-size:.85rem; padding:8px 10px;
+  border:1px solid var(--line); border-radius:6px; background:var(--card); color:var(--ink);
+}
+.save input.who{flex:0 1 130px}
+.save button{
+  font:inherit; font-size:.85rem; font-weight:600; padding:8px 18px; border-radius:6px;
+  border:none; background:var(--gold); color:#fff; cursor:pointer;
+}
+.save .msg{margin:8px 0 0; font-size:.78rem; color:var(--ng); min-height:1.2em}
+.save .msg.ok{color:var(--ok)}
+.saved{
+  margin:10px 0 0; padding:10px 12px; border-radius:8px;
+  background:var(--chipbg); font-size:.8rem;
+}
+.saved a{color:var(--accent); word-break:break-all}
+.saved .who{color:var(--sub)}
+.saved button{
+  font:inherit; font-size:.75rem; padding:2px 10px; margin-left:8px;
+  border:1px solid var(--line); border-radius:999px;
+  background:transparent; color:var(--sub); cursor:pointer;
+}
+.dock{
+  position:fixed; left:0; right:0; bottom:0; z-index:5;
+  background:var(--card); border-top:1px solid var(--line);
+  padding:10px 16px calc(10px + env(safe-area-inset-bottom));
+  display:none; gap:10px; align-items:center; justify-content:center; flex-wrap:wrap;
+  box-shadow:0 -4px 14px rgba(0,0,0,.08);
+}
+.dock.on{display:flex}
+.dock span{font-size:.82rem}
+.dock button{
+  font:inherit; font-size:.85rem; font-weight:600; padding:9px 18px; border-radius:8px;
+  border:none; background:var(--accent); color:#fff; cursor:pointer;
+}
+.dock button.sub{background:var(--chipbg); color:var(--ink); font-weight:400}
 footer{margin-top:40px; padding-top:16px; border-top:1px solid var(--line);
   color:var(--sub); font-size:.78rem}
 .toast{
@@ -122,7 +164,8 @@ footer{margin-top:40px; padding-top:16px; border-top:1px solid var(--line);
       <li>その日のカードの「本文をコピー」を押す。</li>
       <li>X または Instagram の投稿画面に、<b>そのまま貼る</b>。書き足さない・削らない。</li>
       <li>画像があるカードは、画像を保存して添付する。<b>代替テキスト（ALT）も必ず入れる。</b></li>
-      <li>投稿したら、<b>その投稿のURLを矢部さんに送る</b>。台帳に記録します。</li>
+      <li>投稿したら、そのカードの欄に<b>投稿のURLと自分の名前を入れて「保存」</b>を押す。</li>
+      <li>最後に画面下の<b>「まとめて報告」</b>を押して、出てきた文面を矢部さんに送る。</li>
     </ol>
     <p class="warn">
       1日2投稿まで。数分以内の連続投稿はしない（スパム判定を受けます）。<br>
@@ -140,7 +183,15 @@ footer{margin-top:40px; padding-top:16px; border-top:1px solid var(--line);
   <footer>
     <p>このページは下書きの受け渡し用です。ここから投稿はできません。公開ボタンは人が押します。</p>
     <p>内容は <code>output/YYYY-MM-DD/</code> の成果物から自動で組み立てています。直すときは元のファイルを直してください。</p>
+    <p><b>保存した投稿URLは、この端末のブラウザの中だけに残ります。</b>
+      他の人の画面には出ません。だから「まとめて報告」で矢部さんに送ってください。</p>
   </footer>
+</div>
+
+<div class="dock" id="dock">
+  <span id="dock-msg"></span>
+  <button id="dock-report">まとめて報告</button>
+  <button class="sub" id="dock-done">報告しました</button>
 </div>
 <div class="toast" id="toast">コピーしました</div>
 
@@ -174,6 +225,41 @@ footer{margin-top:40px; padding-top:16px; border-top:1px solid var(--line);
       navigator.clipboard.writeText(text).then(
         function(){ toast(label + 'をコピーしました'); }, fallback);
     } else { fallback(); }
+  }
+
+  // ── この端末に残す投稿記録 ─────────────────────────────
+  // 静的サイトなので、保存先はこの人のブラウザしかない。
+  // 他の人には見えないので、最後に「まとめて報告」で送ってもらう。
+  var KEY = 'entame-rosai-desk-v1';
+  var store = { who: '', log: {} };
+  try {
+    var raw = localStorage.getItem(KEY);
+    if (raw) { var p = JSON.parse(raw); if (p && p.log) store = p; }
+  } catch(e) { /* プライベートモード等。記録なしで動かす */ }
+
+  function persist(){
+    try { localStorage.setItem(KEY, JSON.stringify(store)); return true; }
+    catch(e){ return false; }
+  }
+  function recKey(date, key){ return date + '/' + key; }
+
+  function now(){
+    var d = new Date(), p = function(n){ return ('0' + n).slice(-2); };
+    return d.getFullYear() + '-' + p(d.getMonth()+1) + '-' + p(d.getDate())
+      + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+  }
+
+  function validUrl(url, key){
+    if (!/^https:\/\//.test(url)) return 'https:// から始まるURLを貼ってください';
+    var host;
+    try { host = new URL(url).hostname.replace(/^www\./, ''); }
+    catch(e){ return 'URLの形になっていません'; }
+    var x = (host === 'x.com' || host === 'twitter.com');
+    var ig = (host === 'instagram.com');
+    if (key === 'ig' && !ig) return 'Instagram の投稿URLを貼ってください';
+    if (key !== 'ig' && !x) return 'X の投稿URLを貼ってください';
+    if (x && !/\/status\/\d+/.test(url)) return '投稿そのもののURL（/status/…）を貼ってください';
+    return '';
   }
 
   function el(tag, cls, text){
@@ -254,19 +340,137 @@ footer{margin-top:40px; padding-top:16px; border-top:1px solid var(--line);
       c.appendChild(d);
     }
 
-    var p = el('p', 'posted');
     if (item.url) {
-      p.appendChild(document.createTextNode('投稿済み：'));
+      // 台帳に入っているものが正。ここは動かさない
+      var p = el('p', 'posted');
+      p.appendChild(document.createTextNode('投稿済み（記録ずみ）：'));
       var a = el('a', null, item.url);
       a.href = item.url; a.target = '_blank'; a.rel = 'noopener';
       p.appendChild(a);
+      c.appendChild(p);
     } else {
-      p.style.color = 'var(--sub)';
-      p.textContent = '状態：' + item.status;
+      c.appendChild(saveBox(item, c));
     }
-    c.appendChild(p);
     return c;
   }
+
+  function saveBox(item, cardEl){
+    var box = el('div');
+    var id = recKey(item.date, item.key);
+
+    function render(){
+      box.innerHTML = '';
+      var rec = store.log[id];
+      if (rec) {
+        var done = el('div', 'saved');
+        done.appendChild(el('b', null, '投稿しました'));
+        done.appendChild(document.createTextNode('　'));
+        var a = el('a', null, rec.url);
+        a.href = rec.url; a.target = '_blank'; a.rel = 'noopener';
+        done.appendChild(a);
+        done.appendChild(el('div', 'who',
+          (rec.who || '担当者未記入') + '　' + rec.at
+          + (rec.reported ? '　報告ずみ' : '　未報告')));
+        var undo = el('button', null, '取り消す');
+        undo.addEventListener('click', function(){
+          delete store.log[id]; persist(); render(); dock();
+        });
+        done.appendChild(undo);
+        box.appendChild(done);
+        cardEl.classList.add('done');
+        cardEl.dataset.done = '1';
+        return;
+      }
+      cardEl.classList.remove('done');
+      cardEl.dataset.done = '0';
+
+      var wrap = el('div', 'save');
+      wrap.appendChild(el('h3', null, '投稿したら、URLを貼って保存'));
+      var row = el('div', 'row');
+      var url = document.createElement('input');
+      url.type = 'url'; url.placeholder = '投稿のURLを貼る';
+      url.setAttribute('inputmode', 'url');
+      var who = document.createElement('input');
+      who.className = 'who'; who.type = 'text';
+      who.placeholder = '担当者名'; who.value = store.who || '';
+      var btn = el('button', null, '保存');
+      row.appendChild(url); row.appendChild(who); row.appendChild(btn);
+      wrap.appendChild(row);
+      var msg = el('p', 'msg');
+      wrap.appendChild(msg);
+
+      function save(){
+        var v = url.value.trim();
+        var err = validUrl(v, item.key);
+        if (err) { msg.className = 'msg'; msg.textContent = err; return; }
+        store.who = who.value.trim();
+        store.log[id] = {
+          date: item.date, key: item.key, label: item.label,
+          url: v, who: store.who, at: now(), reported: false
+        };
+        if (!persist()) {
+          msg.className = 'msg';
+          msg.textContent = 'この端末には保存できませんでした。URLを直接お送りください';
+          return;
+        }
+        render(); dock(); toast('保存しました');
+      }
+      btn.addEventListener('click', save);
+      url.addEventListener('keydown', function(e){ if (e.key === 'Enter') save(); });
+      box.appendChild(wrap);
+    }
+
+    render();
+    return box;
+  }
+
+  // ── 下の固定バー：未報告の件数と、まとめて報告 ───────────────
+  var dockEl = document.getElementById('dock');
+  var dockMsg = document.getElementById('dock-msg');
+
+  function pending(){
+    return Object.keys(store.log)
+      .filter(function(k){ return !store.log[k].reported; })
+      .map(function(k){ return store.log[k]; })
+      .sort(function(a, b){ return a.date < b.date ? -1 : 1; });
+  }
+
+  function dock(){
+    var n = pending().length;
+    dockEl.classList.toggle('on', n > 0);
+    dockMsg.textContent = '未報告 ' + n + '件';
+  }
+
+  function reportText(){
+    var lines = ['芸能労災 投稿デスク｜投稿しました'];
+    pending().forEach(function(r){
+      lines.push('');
+      lines.push(r.date + '　' + r.label);
+      lines.push(r.url);
+      lines.push('投稿者 ' + (r.who || '（未記入）') + '　' + r.at);
+    });
+    return lines.join('\n');
+  }
+
+  document.getElementById('dock-report').addEventListener('click', function(){
+    var text = reportText();
+    copy(text, '報告の文面');
+    // メールでも送れるようにする。使わない人はコピーしたものを貼れば足りる
+    var a = document.createElement('a');
+    a.href = 'mailto:?subject=' + encodeURIComponent('芸能労災 投稿しました')
+      + '&body=' + encodeURIComponent(text);
+    a.target = '_blank'; a.rel = 'noopener';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  });
+
+  document.getElementById('dock-done').addEventListener('click', function(){
+    pending().forEach(function(r){ r.reported = true; });
+    persist(); dock();
+    Array.prototype.forEach.call(document.querySelectorAll('.saved .who'), function(n){
+      n.textContent = n.textContent.replace('未報告', '報告ずみ');
+    });
+    toast('報告ずみにしました');
+  });
 
   DATA.days.forEach(function(day){
     var sec = el('section', 'day');
@@ -274,6 +478,7 @@ footer{margin-top:40px; padding-top:16px; border-top:1px solid var(--line);
     day.items.forEach(function(item){ sec.appendChild(card(item)); });
     list.appendChild(sec);
   });
+  dock();
 
   var todoOnly = false;
   document.getElementById('f-todo').addEventListener('click', function(){

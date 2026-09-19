@@ -177,6 +177,7 @@ def collect():
             hashtags = re.findall(r"#[^\s#]+", text)
             items.append({
                 "key": key,
+                "date": date,          # 端末に残す投稿記録の鍵（date/key）に使う
                 "label": label,
                 "text": text,
                 "chars": len(text.replace("\n", "")),
