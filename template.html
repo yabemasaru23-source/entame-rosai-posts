@@ -141,6 +141,18 @@ details.alt pre{
   border:none; background:var(--accent); color:#fff; cursor:pointer;
 }
 .dock button.sub{background:var(--chipbg); color:var(--ink); font-weight:400}
+#report-pane{
+  margin:26px 0 0; padding:16px; border-radius:12px;
+  background:var(--card); border:2px solid var(--gold);
+}
+#report-pane h2{font-size:1rem; margin:0 0 8px}
+#report-pane p{margin:0 0 10px; font-size:.85rem}
+#report-pane p.sub{margin:10px 0 0; color:var(--sub); font-size:.8rem}
+#report-pane textarea{
+  width:100%; font:inherit; font-size:.85rem; line-height:1.6; padding:10px;
+  border:1px solid var(--line); border-radius:8px;
+  background:var(--bg); color:var(--ink); resize:vertical;
+}
 footer{margin-top:40px; padding-top:16px; border-top:1px solid var(--line);
   color:var(--sub); font-size:.78rem}
 .toast{
@@ -179,6 +191,14 @@ footer{margin-top:40px; padding-top:16px; border-top:1px solid var(--line);
   </div>
 
   <main id="list"></main>
+
+  <section id="report-pane" style="display:none">
+    <h2>矢部さんに送る文面</h2>
+    <p>コピーしてあります。<b>LINE かメールで矢部さんに送ってください。</b>
+      コピーできていなければ、下の文をそのまま選んで送ってください。</p>
+    <textarea readonly rows="10"></textarea>
+    <p class="sub">送ったら、画面下の「報告しました」を押してください。</p>
+  </section>
 
   <footer>
     <p>このページは下書きの受け渡し用です。ここから投稿はできません。公開ボタンは人が押します。</p>
@@ -455,17 +475,18 @@ footer{margin-top:40px; padding-top:16px; border-top:1px solid var(--line);
   document.getElementById('dock-report').addEventListener('click', function(){
     var text = reportText();
     copy(text, '報告の文面');
-    // メールでも送れるようにする。使わない人はコピーしたものを貼れば足りる
-    var a = document.createElement('a');
-    a.href = 'mailto:?subject=' + encodeURIComponent('芸能労災 投稿しました')
-      + '&body=' + encodeURIComponent(text);
-    a.target = '_blank'; a.rel = 'noopener';
-    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    // コピーが使えない端末でも渡せるよう、文面そのものを画面に出しておく。
+    // mailto は宛先を書けない（公開ページにメールアドレスを載せないため）ので使わない。
+    var pane = document.getElementById('report-pane');
+    pane.querySelector('textarea').value = text;
+    pane.style.display = 'block';
+    pane.scrollIntoView({behavior: 'smooth', block: 'center'});
   });
 
   document.getElementById('dock-done').addEventListener('click', function(){
     pending().forEach(function(r){ r.reported = true; });
     persist(); dock();
+    document.getElementById('report-pane').style.display = 'none';
     Array.prototype.forEach.call(document.querySelectorAll('.saved .who'), function(n){
       n.textContent = n.textContent.replace('未報告', '報告ずみ');
     });
