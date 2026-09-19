@@ -193,8 +193,8 @@ footer{margin-top:40px; padding-top:16px; border-top:1px solid var(--line);
         <b>代替テキスト（ALT）は、画像を添付した直後・本文を打つ前に入れる。</b>
         本文を先に打つと飛びます。X は投稿後に追加できません。</li>
       <li>投稿したら、そのカードの欄に<b>投稿のURLと自分の名前を入れて「保存」</b>を押す。</li>
-      <li>最後に画面下の<b>「まとめて報告」</b>を押して、出てきた文面を矢部さんに送る。</li>
     </ol>
+    <p id="share-note"></p>
     <p class="warn">
       1日2投稿まで。数分以内の連続投稿はしない（スパム判定を受けます）。<br>
       迷ったら投稿しないで確認してください。<b>取り消しには削除しか手段がなく、表示回数が0に戻ります。</b>
@@ -219,8 +219,7 @@ footer{margin-top:40px; padding-top:16px; border-top:1px solid var(--line);
   <footer>
     <p>このページは下書きの受け渡し用です。ここから投稿はできません。公開ボタンは人が押します。</p>
     <p>内容は <code>output/YYYY-MM-DD/</code> の成果物から自動で組み立てています。直すときは元のファイルを直してください。</p>
-    <p><b>保存した投稿URLは、この端末のブラウザの中だけに残ります。</b>
-      他の人の画面には出ません。だから「まとめて報告」で矢部さんに送ってください。</p>
+    <p id="share-foot"></p>
   </footer>
 </div>
 
@@ -240,6 +239,17 @@ footer{margin-top:40px; padding-top:16px; border-top:1px solid var(--line);
 
   document.getElementById('meta').textContent =
     DATA.account + '／直近' + DATA.days.length + '日分　最終更新 ' + DATA.builtAt;
+
+  document.getElementById('share-note').innerHTML = DATA.endpoint
+    ? '保存すると、<b>その場で矢部さんの記録表に入ります。</b>'
+      + 'このページを開いている全員の画面にも出ます。報告を別に送る必要はありません。'
+    : '<b>いまは保存してもこの端末にしか残りません。</b>'
+      + '最後に画面下の「まとめて報告」を押して、出てきた文面を矢部さんに送ってください。';
+  document.getElementById('share-foot').innerHTML = DATA.endpoint
+    ? '保存した投稿URLは矢部さんの記録表に送られます。'
+      + '送れなかったときだけ、画面下に「共有できていない記録」のバーが出ます。'
+    : '<b>保存した投稿URLは、この端末のブラウザの中だけに残ります。</b>'
+      + '他の人の画面には出ません。';
 
   function toast(msg){
     toastEl.textContent = msg; toastEl.classList.add('on');
@@ -278,6 +288,52 @@ footer{margin-top:40px; padding-top:16px; border-top:1px solid var(--line);
     catch(e){ return false; }
   }
   function recKey(date, key){ return date + '/' + key; }
+
+  // ── みんなに共有される記録（スプレッドシート） ──────────────
+  // endpoint が空のときは、この仕組みは丸ごと働かない。
+  // そのぶん下の「まとめて報告」が自動的に出るので、運用は止まらない。
+  var shared = {};                    // date/key -> {url, who, at}
+  var redraw = [];                    // カードごとの描き直し
+
+  function jsonp(url, done){
+    var name = '__desk' + Math.random().toString(36).slice(2);
+    var s = document.createElement('script');
+    var timer = setTimeout(function(){ cleanup(); done(null); }, 12000);
+    function cleanup(){
+      clearTimeout(timer);
+      try { delete window[name]; } catch(e){ window[name] = undefined; }
+      if (s.parentNode) s.parentNode.removeChild(s);
+    }
+    window[name] = function(data){ cleanup(); done(data); };
+    s.onerror = function(){ cleanup(); done(null); };
+    s.src = url + (url.indexOf('?') < 0 ? '?' : '&') + 'callback=' + name;
+    document.head.appendChild(s);
+  }
+
+  function pull(done){
+    if (!DATA.endpoint) { if (done) done(); return; }
+    jsonp(DATA.endpoint, function(res){
+      if (res && res.ok && res.rows) {
+        shared = {};
+        res.rows.forEach(function(r){ shared[recKey(r.date, r.key)] = r; });
+        redraw.forEach(function(f){ f(); });
+      }
+      dock();
+      if (done) done();
+    });
+  }
+
+  function push(rec, done){
+    if (!DATA.endpoint) { done(false); return; }
+    // Apps Script は CORS を返さないので no-cors で送る。
+    // 返事は読めないため、少し待ってから読み直して結果を確かめる。
+    fetch(DATA.endpoint, {
+      method: 'POST', mode: 'no-cors',
+      headers: {'Content-Type': 'text/plain;charset=utf-8'},
+      body: JSON.stringify(rec)
+    }).then(function(){ setTimeout(function(){ pull(function(){ done(true); }); }, 1500); },
+      function(){ done(false); });
+  }
 
   function now(){
     var d = new Date(), p = function(n){ return ('0' + n).slice(-2); };
@@ -417,7 +473,10 @@ footer{margin-top:40px; padding-top:16px; border-top:1px solid var(--line);
 
     function render(){
       box.innerHTML = '';
-      var rec = store.log[id];
+      var srv = shared[id];               // みんなに見えている記録
+      var mine = store.log[id];           // この端末の控え
+      var rec = srv || mine;
+
       if (rec) {
         var done = el('div', 'saved');
         done.appendChild(el('b', null, '投稿しました'));
@@ -426,13 +485,17 @@ footer{margin-top:40px; padding-top:16px; border-top:1px solid var(--line);
         a.href = rec.url; a.target = '_blank'; a.rel = 'noopener';
         done.appendChild(a);
         done.appendChild(el('div', 'who',
-          (rec.who || '担当者未記入') + '　' + rec.at
-          + (rec.reported ? '　報告ずみ' : '　未報告')));
-        var undo = el('button', null, '取り消す');
-        undo.addEventListener('click', function(){
-          delete store.log[id]; persist(); render(); dock();
-        });
-        done.appendChild(undo);
+          (rec.who || '担当者未記入') + '　' + rec.at + '　'
+          + (srv ? '共有ずみ' : (DATA.endpoint ? '送信中／この端末だけ' : 'この端末だけ'))));
+        if (!srv) {
+          // 共有されていないものだけ取り消せる。
+          // 共有ずみの行はスプレッドシートが正なので、ここからは動かさない
+          var undo = el('button', null, '取り消す');
+          undo.addEventListener('click', function(){
+            delete store.log[id]; persist(); render(); dock();
+          });
+          done.appendChild(undo);
+        }
         box.appendChild(done);
         cardEl.classList.add('done');
         cardEl.dataset.done = '1';
@@ -461,22 +524,30 @@ footer{margin-top:40px; padding-top:16px; border-top:1px solid var(--line);
         var err = validUrl(v, item.key);
         if (err) { msg.className = 'msg'; msg.textContent = err; return; }
         store.who = who.value.trim();
-        store.log[id] = {
+        var rec2 = {
           date: item.date, key: item.key, label: item.label,
-          url: v, who: store.who, at: now(), reported: false
+          url: v, who: store.who, at: now()
         };
-        if (!persist()) {
+        // まず端末に控える。共有に失敗しても記録が消えないようにするため
+        store.log[id] = rec2;
+        if (!persist() && !DATA.endpoint) {
           msg.className = 'msg';
           msg.textContent = 'この端末には保存できませんでした。URLを直接お送りください';
           return;
         }
         render(); dock(); toast('保存しました');
+        btn.disabled = true;
+        push(rec2, function(ok){
+          if (ok) return;                 // pull が描き直す
+          if (DATA.endpoint) toast('共有できませんでした。下の「まとめて報告」で送ってください');
+        });
       }
       btn.addEventListener('click', save);
       url.addEventListener('keydown', function(e){ if (e.key === 'Enter') save(); });
       box.appendChild(wrap);
     }
 
+    redraw.push(render);
     render();
     return box;
   }
@@ -485,9 +556,11 @@ footer{margin-top:40px; padding-top:16px; border-top:1px solid var(--line);
   var dockEl = document.getElementById('dock');
   var dockMsg = document.getElementById('dock-msg');
 
+  // 共有に載っていない＝矢部さんにまだ届いていないもの。
+  // 共有がうまく動いている日は0件になり、このバーは出てこない。
   function pending(){
     return Object.keys(store.log)
-      .filter(function(k){ return !store.log[k].reported; })
+      .filter(function(k){ return !shared[k] && !store.log[k].reported; })
       .map(function(k){ return store.log[k]; })
       .sort(function(a, b){ return a.date < b.date ? -1 : 1; });
   }
@@ -495,7 +568,9 @@ footer{margin-top:40px; padding-top:16px; border-top:1px solid var(--line);
   function dock(){
     var n = pending().length;
     dockEl.classList.toggle('on', n > 0);
-    dockMsg.textContent = '未報告 ' + n + '件';
+    dockMsg.textContent = DATA.endpoint
+      ? '共有できていない記録 ' + n + '件'
+      : '未報告 ' + n + '件';
   }
 
   function reportText(){
@@ -537,6 +612,7 @@ footer{margin-top:40px; padding-top:16px; border-top:1px solid var(--line);
     list.appendChild(sec);
   });
   dock();
+  pull();          // 共有されている記録を読み込む（endpoint が空なら何もしない）
 
   var todoOnly = false;
   document.getElementById('f-todo').addEventListener('click', function(){

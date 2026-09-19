@@ -209,10 +209,17 @@ def main():
         print("output/ に直近%d日分が見つかりません。" % DAYS)
         sys.exit(1)
 
+    conf = {}
+    conf_path = os.path.join(HERE, "config.json")
+    if os.path.exists(conf_path):
+        conf = json.loads(read_text(conf_path))
+
     data = {
         "account": "@entame_rosai",
         "days": days,
         "builtAt": datetime.now().strftime("%Y-%m-%d %H:%M"),
+        # 空なら、保存はその端末のブラウザにだけ残る（共有されない）
+        "endpoint": conf.get("endpoint", ""),
     }
     blob = json.dumps(data, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
     tpl = read_text(os.path.join(HERE, "template.html"))
@@ -229,6 +236,11 @@ def main():
         print("  ★ 機械チェックのNGが %d件あります。サイト上で赤く出ています" % ng)
     else:
         print("  機械チェックのNGは0件")
+    if data["endpoint"]:
+        print("  投稿記録の共有：あり（スプレッドシートに集まります）")
+    else:
+        print("  ★ 投稿記録の共有：なし。config.json の endpoint が空です")
+        print("     （gas/設置手順.md の手順6の /exec のURLを入れると共有されます）")
     print("次に: git add -A && git commit -m '投稿デスク更新' && git push")
 
 
