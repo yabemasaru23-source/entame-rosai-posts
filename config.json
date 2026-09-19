@@ -1,5 +1,5 @@
 {
   "_": "投稿記録をスプレッドシートに集めるための受け口。gas/設置手順.md の手順6で出てくる /exec のURLをここに入れる。空のままだと、保存はその端末のブラウザにだけ残る（共有されない）。",
-  "endpoint": "",
+  "endpoint": "https://script.google.com/macros/s/AKfycbxhxM75PszpPOX_HDJ4yuBmQSqu1b7CXq2sbCxlqTZ_TyF8hROH2MyKnYNU11avb8UQCA/exec",
   "sheetUrl": "https://docs.google.com/spreadsheets/d/1GgROCjiaK5QKzroyMtErOlnb7PllQqDAClps8GdVM80/edit"
 }

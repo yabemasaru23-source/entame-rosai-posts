@@ -45,9 +45,10 @@ function doPost(e) {
     }
 
     // 同じ投稿日・同じ媒体があれば、その行を書き換える（貼り直しのため）
+    // ※ 投稿日の列はスプレッドシートが日付型に変換するので、必ず ymd() を通して比べる
     var row = -1;
     for (var i = 1; i < values.length; i++) {
-      if (String(values[i][1]) === d.date && String(values[i][5]) === d.key) { row = i + 1; break; }
+      if (ymd(values[i][1]) === d.date && String(values[i][5]) === d.key) { row = i + 1; break; }
     }
     var rec = [new Date(), d.date, cut(d.label, 40), d.url, cut(d.who, 40), d.key];
     if (row > 0) {
@@ -71,7 +72,7 @@ function doGet(e) {
     var r = values[i];
     if (!r[3]) continue;
     rows.push({
-      at: stamp(r[0]), date: String(r[1]), label: String(r[2]),
+      at: stamp(r[0]), date: ymd(r[1]), label: String(r[2]),
       url: String(r[3]), who: String(r[4]), key: String(r[5])
     });
   }
@@ -136,6 +137,15 @@ function countToday(values) {
         Utilities.formatDate(values[i][0], 'Asia/Tokyo', 'yyyy-MM-dd') === t) n++;
   }
   return n;
+}
+
+
+/** 投稿日を必ず 2026-09-19 の形で返す。
+ *  スプレッドシートは '2026-09-19' という文字列を日付型に変換してしまい、
+ *  そのまま読むと 'Thu Sep 19 2026 ...' になる。サイト側と突き合わない。 */
+function ymd(v) {
+  if (v instanceof Date) return Utilities.formatDate(v, 'Asia/Tokyo', 'yyyy-MM-dd');
+  return String(v);
 }
 
 
