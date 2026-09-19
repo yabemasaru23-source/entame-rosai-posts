@@ -41,12 +41,13 @@ SEP = re.compile(r"^[─-╿\-=_\*ー]{6,}$")
 META_HEAD = re.compile(r"^(【|##\s|#\s|■\s|★)")
 
 MEDIA = [
-    # (キー, 表示名, ファイル名, 台帳の媒体欄, 画像フォルダ, ALTファイル)
-    ("x", "X（@entame_rosai）", "x_post.txt", "X", "x_image", "x_image_alt.txt"),
+    # (キー, 表示名, ファイル名, 台帳の媒体欄, 画像フォルダ, ALTファイル, 投稿アカウント)
+    ("x", "X（@entame_rosai）", "x_post.txt", "X", "x_image", "x_image_alt.txt",
+     "@entame_rosai"),
     ("yabe", "X（@yabemasaru23）", "x_post_yabemasaru23.txt", "X（@yabemasaru23）",
-     "x_image_yabemasaru23", "x_image_yabemasaru23_alt.txt"),
+     "x_image_yabemasaru23", "x_image_yabemasaru23_alt.txt", "@yabemasaru23"),
     ("ig", "Instagram（@entame_rosai）", "instagram_post.md", "Instagram",
-     "instagram", "instagram_alt_text.txt"),
+     "instagram", "instagram_alt_text.txt", "@entame_rosai"),
 ]
 
 WEEK = "月火水木金土日"
@@ -166,7 +167,7 @@ def collect():
         if not os.path.isdir(folder):
             continue
         items = []
-        for key, label, fname, ledger_media, imgdir, altfile in MEDIA:
+        for key, label, fname, ledger_media, imgdir, altfile, account in MEDIA:
             raw = read_text(os.path.join(folder, fname))
             if not raw.strip():
                 continue
@@ -179,6 +180,7 @@ def collect():
                 "key": key,
                 "date": date,          # 端末に残す投稿記録の鍵（date/key）に使う
                 "label": label,
+                "account": account,    # 投稿画面を開くボタンのすぐ下に出す
                 "text": text,
                 "chars": len(text.replace("\n", "")),
                 "lines": len(text.split("\n")),

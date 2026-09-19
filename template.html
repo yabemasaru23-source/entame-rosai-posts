@@ -74,6 +74,13 @@ button.copy{
   border:none; background:var(--accent); color:#fff; cursor:pointer;
 }
 button.copy.sub{background:var(--chipbg); color:var(--ink); font-weight:400}
+button.copy.open{background:var(--gold)}
+.account{
+  margin:8px 0 0; font-size:.78rem; color:var(--sub);
+}
+.account b{color:var(--ng)}
+.links{margin:6px 0 0; font-size:.82rem}
+.links a{color:var(--accent); margin-right:14px}
 button.copy:active{transform:translateY(1px)}
 .stats{margin:10px 0 0; font-size:.78rem; color:var(--sub)}
 .stats b{color:var(--ink)}
@@ -168,14 +175,23 @@ footer{margin-top:40px; padding-top:16px; border-top:1px solid var(--line);
   <header>
     <h1>芸能労災 投稿デスク</h1>
     <p class="meta" id="meta"></p>
+    <p class="links">
+      <a href="https://x.com/entame_rosai" target="_blank" rel="noopener">X @entame_rosai</a>
+      <a href="https://www.instagram.com/entame_rosai/" target="_blank" rel="noopener">Instagram @entame_rosai</a>
+      <a href="https://x.com/yabemasaru23" target="_blank" rel="noopener">X @yabemasaru23</a>
+    </p>
   </header>
 
   <section class="howto">
     <h2>つかいかた</h2>
     <ol>
-      <li>その日のカードの「本文をコピー」を押す。</li>
-      <li>X または Instagram の投稿画面に、<b>そのまま貼る</b>。書き足さない・削らない。</li>
-      <li>画像があるカードは、画像を保存して添付する。<b>代替テキスト（ALT）も必ず入れる。</b></li>
+      <li>その日のカードの<b>「コピーして X を開く」</b>（Instagram のカードは Instagram）を押す。
+        投稿画面が新しいタブで開き、本文はコピーずみです。</li>
+      <li>投稿画面に<b>そのまま貼る</b>。書き足さない・削らない。
+        <b>アカウントが合っているか、左下の表示とアイコンで必ず確認する。</b></li>
+      <li>画像があるカードは、画像を保存して添付する。
+        <b>代替テキスト（ALT）は、画像を添付した直後・本文を打つ前に入れる。</b>
+        本文を先に打つと飛びます。X は投稿後に追加できません。</li>
       <li>投稿したら、そのカードの欄に<b>投稿のURLと自分の名前を入れて「保存」</b>を押す。</li>
       <li>最後に画面下の<b>「まとめて報告」</b>を押して、出てきた文面を矢部さんに送る。</li>
     </ol>
@@ -309,12 +325,33 @@ footer{margin-top:40px; padding-top:16px; border-top:1px solid var(--line);
     var b = el('button', 'copy', '本文をコピー');
     b.addEventListener('click', function(){ copy(item.text, '本文'); });
     actions.appendChild(b);
+
+    // 投稿画面をそのまま開く。コピーと同時にやるので、貼るところから始められる。
+    // ※ 本文を URL に載せて開く形（intent）は使わない。あの画面では画像を添付できず、
+    //   画像とALTが必須のこの運用では、かえって手戻りになる。
+    var open = el('button', 'copy open', item.key === 'ig' ? 'コピーして Instagram を開く'
+                                                           : 'コピーして X を開く');
+    open.addEventListener('click', function(){
+      copy(item.text, '本文');
+      window.open(item.key === 'ig' ? 'https://www.instagram.com/'
+                                    : 'https://x.com/compose/post',
+                  '_blank', 'noopener');
+    });
+    actions.appendChild(open);
+
     if (item.alt) {
       var b2 = el('button', 'copy sub', '代替テキストをコピー');
       b2.addEventListener('click', function(){ copy(item.alt, '代替テキスト'); });
       actions.appendChild(b2);
     }
     c.appendChild(actions);
+
+    // どのアカウントから出すのかを、投稿画面を開く場所のすぐ下に置く。
+    // ログイン中のアカウントは日によって変わっており、取り違えると削除しか直す手段がない。
+    var acc = el('p', 'account');
+    acc.innerHTML = '投稿するアカウント：<b>' + item.account + '</b>　'
+      + '（投稿画面の左下と、アイコンを必ず見てください）';
+    c.appendChild(acc);
 
     var stats = el('p', 'stats');
     var over = item.limit && item.chars > item.limit;
