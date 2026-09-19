@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>芸能労災 投稿デスク</title>
+<style>
+:root{
+  --bg:#f6f5f2; --card:#fff; --ink:#1b1c1f; --sub:#5f6470; --line:#e2e0da;
+  --accent:#1d2a5c; --gold:#a98033; --ok:#2f6b46; --ng:#a52a2a; --warn:#8a6a1f;
+  --chipbg:#eceae4;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#15161a; --card:#1e2026; --ink:#eceef2; --sub:#a0a6b2; --line:#33363f;
+    --accent:#9db4f0; --gold:#d3ad63; --ok:#79c79a; --ng:#f08a8a;
+    --warn:#d9bb6f; --chipbg:#2a2d35;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#15161a; --card:#1e2026; --ink:#eceef2; --sub:#a0a6b2; --line:#33363f;
+  --accent:#9db4f0; --gold:#d3ad63; --ok:#79c79a; --ng:#f08a8a; --warn:#d9bb6f; --chipbg:#2a2d35;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP","Yu Gothic",sans-serif;
+  line-height:1.75; -webkit-text-size-adjust:100%;
+}
+.wrap{max-width:780px; margin:0 auto; padding:24px 16px 80px}
+header h1{font-size:1.4rem; margin:0 0 4px; letter-spacing:.02em}
+.meta{color:var(--sub); font-size:.85rem; margin:0}
+.howto{
+  background:var(--card); border:1px solid var(--line); border-radius:12px;
+  padding:14px 16px; margin:18px 0 10px; font-size:.9rem;
+}
+.howto h2{font-size:.9rem; margin:0 0 8px; color:var(--gold); letter-spacing:.06em}
+.howto ol{margin:0; padding-left:1.2em}
+.howto li{margin:3px 0}
+.howto .warn{margin:10px 0 0; padding-top:10px; border-top:1px solid var(--line); color:var(--ng)}
+.bar{display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin:14px 0 18px}
+.bar button{
+  font:inherit; font-size:.82rem; padding:6px 12px; border-radius:999px; cursor:pointer;
+  border:1px solid var(--line); background:var(--card); color:var(--ink);
+}
+.bar button[aria-pressed="true"]{background:var(--accent); color:#fff; border-color:var(--accent)}
+.day{margin:26px 0 0}
+.day > h2{
+  font-size:1rem; margin:0 0 10px; padding-bottom:6px;
+  border-bottom:2px solid var(--line); letter-spacing:.04em;
+}
+.card{
+  background:var(--card); border:1px solid var(--line); border-radius:12px;
+  padding:16px; margin:0 0 14px;
+}
+.card.done{opacity:.72}
+.head{display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:10px}
+.chip{
+  font-size:.74rem; padding:3px 10px; border-radius:999px;
+  background:var(--chipbg); color:var(--sub); white-space:nowrap;
+}
+.chip.media{background:var(--accent); color:#fff}
+.chip.todo{background:var(--gold); color:#fff}
+.chip.done{background:var(--ok); color:#fff}
+pre.body{
+  white-space:pre-wrap; word-break:break-word; margin:0; font:inherit;
+  background:var(--bg); border:1px solid var(--line); border-radius:8px;
+  padding:14px; -webkit-user-select:text; user-select:text;
+}
+.actions{display:flex; gap:8px; flex-wrap:wrap; margin-top:10px}
+button.copy{
+  font:inherit; font-size:.85rem; font-weight:600; padding:9px 18px; border-radius:8px;
+  border:none; background:var(--accent); color:#fff; cursor:pointer;
+}
+button.copy.sub{background:var(--chipbg); color:var(--ink); font-weight:400}
+button.copy:active{transform:translateY(1px)}
+.stats{margin:10px 0 0; font-size:.78rem; color:var(--sub)}
+.stats b{color:var(--ink)}
+.stats .over{color:var(--ng)}
+.check{margin:10px 0 0; font-size:.8rem}
+.check .ok{color:var(--ok)}
+.check ul{margin:4px 0 0; padding-left:1.2em}
+.check li.e{color:var(--ng)}
+.check li.w{color:var(--warn)}
+.imgs{margin-top:12px}
+.imgs h3{font-size:.8rem; margin:0 0 6px; color:var(--sub); font-weight:600}
+.thumbs{display:flex; gap:8px; overflow-x:auto; padding-bottom:4px}
+.thumbs a{flex:0 0 auto; text-align:center; text-decoration:none; color:var(--sub); font-size:.7rem}
+.thumbs img{
+  display:block; width:84px; height:84px; object-fit:cover;
+  border:1px solid var(--line); border-radius:6px; background:var(--bg);
+}
+details.alt{margin-top:10px; font-size:.82rem}
+details.alt summary{cursor:pointer; color:var(--sub)}
+details.alt pre{
+  white-space:pre-wrap; word-break:break-word; font:inherit; font-size:.8rem;
+  background:var(--bg); border:1px solid var(--line); border-radius:8px; padding:10px; margin:8px 0 0;
+}
+.posted{margin:10px 0 0; font-size:.8rem}
+.posted a{color:var(--accent)}
+footer{margin-top:40px; padding-top:16px; border-top:1px solid var(--line);
+  color:var(--sub); font-size:.78rem}
+.toast{
+  position:fixed; left:50%; bottom:24px; transform:translateX(-50%);
+  background:var(--accent); color:#fff; padding:10px 20px; border-radius:999px;
+  font-size:.85rem; opacity:0; pointer-events:none; transition:opacity .18s;
+}
+.toast.on{opacity:1}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>芸能労災 投稿デスク</h1>
+    <p class="meta" id="meta"></p>
+  </header>
+
+  <section class="howto">
+    <h2>つかいかた</h2>
+    <ol>
+      <li>その日のカードの「本文をコピー」を押す。</li>
+      <li>X または Instagram の投稿画面に、<b>そのまま貼る</b>。書き足さない・削らない。</li>
+      <li>画像があるカードは、画像を保存して添付する。<b>代替テキスト（ALT）も必ず入れる。</b></li>
+      <li>投稿したら、<b>その投稿のURLを矢部さんに送る</b>。台帳に記録します。</li>
+    </ol>
+    <p class="warn">
+      1日2投稿まで。数分以内の連続投稿はしない（スパム判定を受けます）。<br>
+      迷ったら投稿しないで確認してください。<b>取り消しには削除しか手段がなく、表示回数が0に戻ります。</b>
+    </p>
+  </section>
+
+  <div class="bar">
+    <button id="f-todo" aria-pressed="false">未投稿だけ表示</button>
+    <button id="f-theme">表示切替</button>
+  </div>
+
+  <main id="list"></main>
+
+  <footer>
+    <p>このページは下書きの受け渡し用です。ここから投稿はできません。公開ボタンは人が押します。</p>
+    <p>内容は <code>output/YYYY-MM-DD/</code> の成果物から自動で組み立てています。直すときは元のファイルを直してください。</p>
+  </footer>
+</div>
+<div class="toast" id="toast">コピーしました</div>
+
+<script id="desk-data" type="application/json">__DATA__</script>
+<script>
+(function(){
+  var DATA = JSON.parse(document.getElementById('desk-data').textContent);
+  var list = document.getElementById('list');
+  var toastEl = document.getElementById('toast'), toastTimer = null;
+
+  document.getElementById('meta').textContent =
+    DATA.account + '／直近' + DATA.days.length + '日分　最終更新 ' + DATA.builtAt;
+
+  function toast(msg){
+    toastEl.textContent = msg; toastEl.classList.add('on');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ toastEl.classList.remove('on'); }, 1600);
+  }
+
+  function copy(text, label){
+    // クリップボードAPIが使えない環境（古い端末・非HTTPS）でも動くよう退避を持つ
+    function fallback(){
+      var ta = document.createElement('textarea');
+      ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); toast(label + 'をコピーしました'); }
+      catch(e){ toast('コピーできませんでした。長押しで選んでください'); }
+      document.body.removeChild(ta);
+    }
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(text).then(
+        function(){ toast(label + 'をコピーしました'); }, fallback);
+    } else { fallback(); }
+  }
+
+  function el(tag, cls, text){
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
+  }
+
+  function isDone(item){ return /投稿済|送信済/.test(item.status); }
+
+  function card(item){
+    var c = el('div', 'card' + (isDone(item) ? ' done' : ''));
+    c.dataset.done = isDone(item) ? '1' : '0';
+
+    var head = el('div', 'head');
+    head.appendChild(el('span', 'chip media', item.label));
+    head.appendChild(el('span', 'chip ' + (isDone(item) ? 'done' : 'todo'),
+      isDone(item) ? '投稿済' : '未投稿'));
+    if (item.images.length) head.appendChild(el('span', 'chip', '画像' + item.images.length + '枚'));
+    c.appendChild(head);
+
+    var pre = el('pre', 'body', item.text);
+    c.appendChild(pre);
+
+    var actions = el('div', 'actions');
+    var b = el('button', 'copy', '本文をコピー');
+    b.addEventListener('click', function(){ copy(item.text, '本文'); });
+    actions.appendChild(b);
+    if (item.alt) {
+      var b2 = el('button', 'copy sub', '代替テキストをコピー');
+      b2.addEventListener('click', function(){ copy(item.alt, '代替テキスト'); });
+      actions.appendChild(b2);
+    }
+    c.appendChild(actions);
+
+    var stats = el('p', 'stats');
+    var over = item.limit && item.chars > item.limit;
+    stats.innerHTML = '本文 <b class="' + (over ? 'over' : '') + '">' + item.chars + '字</b>'
+      + (item.limit ? '（上限' + item.limit + '字）' : '')
+      + '　/　' + item.lines + '行'
+      + '　/　ハッシュタグ ' + item.hashtags + '個';
+    c.appendChild(stats);
+
+    var chk = el('div', 'check');
+    var errs = item.check.errors, warns = item.check.warns;
+    if (!errs.length && !warns.length) {
+      chk.appendChild(el('span', 'ok', '機械チェック：問題なし'));
+    } else {
+      var ul = el('ul');
+      errs.forEach(function(t){ ul.appendChild(el('li', 'e', '要修正　' + t)); });
+      warns.forEach(function(t){ ul.appendChild(el('li', 'w', '要確認　' + t)); });
+      chk.appendChild(el('span', errs.length ? '' : 'ok',
+        errs.length ? '機械チェック：そのまま投稿しないでください' : '機械チェック：確認してください'));
+      chk.appendChild(ul);
+    }
+    c.appendChild(chk);
+
+    if (item.images.length) {
+      var box = el('div', 'imgs');
+      box.appendChild(el('h3', null, '画像（押すと原寸で開きます。長押し／右クリックで保存）'));
+      var th = el('div', 'thumbs');
+      item.images.forEach(function(im){
+        var a = el('a'); a.href = im.path; a.target = '_blank'; a.rel = 'noopener';
+        var img = document.createElement('img');
+        img.src = im.path; img.alt = im.name; img.loading = 'lazy';
+        a.appendChild(img); a.appendChild(el('span', null, im.name));
+        th.appendChild(a);
+      });
+      box.appendChild(th);
+      c.appendChild(box);
+    }
+
+    if (item.alt) {
+      var d = el('details', 'alt');
+      d.appendChild(el('summary', null, '代替テキスト（ALT）を見る'));
+      d.appendChild(el('pre', null, item.alt));
+      c.appendChild(d);
+    }
+
+    var p = el('p', 'posted');
+    if (item.url) {
+      p.appendChild(document.createTextNode('投稿済み：'));
+      var a = el('a', null, item.url);
+      a.href = item.url; a.target = '_blank'; a.rel = 'noopener';
+      p.appendChild(a);
+    } else {
+      p.style.color = 'var(--sub)';
+      p.textContent = '状態：' + item.status;
+    }
+    c.appendChild(p);
+    return c;
+  }
+
+  DATA.days.forEach(function(day){
+    var sec = el('section', 'day');
+    sec.appendChild(el('h2', null, day.label));
+    day.items.forEach(function(item){ sec.appendChild(card(item)); });
+    list.appendChild(sec);
+  });
+
+  var todoOnly = false;
+  document.getElementById('f-todo').addEventListener('click', function(){
+    todoOnly = !todoOnly;
+    this.setAttribute('aria-pressed', todoOnly ? 'true' : 'false');
+    this.textContent = todoOnly ? 'すべて表示' : '未投稿だけ表示';
+    Array.prototype.forEach.call(document.querySelectorAll('.card'), function(c){
+      c.style.display = (todoOnly && c.dataset.done === '1') ? 'none' : '';
+    });
+    Array.prototype.forEach.call(document.querySelectorAll('.day'), function(s){
+      var any = Array.prototype.some.call(s.querySelectorAll('.card'), function(c){
+        return c.style.display !== 'none';
+      });
+      s.style.display = any ? '' : 'none';
+    });
+  });
+
+  document.getElementById('f-theme').addEventListener('click', function(){
+    var now = document.documentElement.getAttribute('data-theme');
+    var dark = now ? now === 'dark'
+      : window.matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.setAttribute('data-theme', dark ? 'light' : 'dark');
+  });
+})();
+</script>
+</body>
+</html>
