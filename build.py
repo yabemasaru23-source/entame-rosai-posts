@@ -35,6 +35,10 @@ sys.path.insert(0, ROOT)
 from tools import rules  # noqa: E402
 
 DAYS = 10
+# 先の日付のぶんも載せる（2026-09-22 追加）。
+# 本人の依頼「今日中に次の10本を作る」で、まとめ書きした先の日付の案が
+# 当日になるまでデスクに出ない作りだった。予定日つきで前倒しに出す。
+AHEAD = 14
 
 # 本文の終わりを示す行（ここから下は検証メモなので載せない）
 SEP = re.compile(r"^[─-╿\-=_\*ー]{6,}$")
@@ -160,7 +164,9 @@ def collect():
     days = []
     led = ledger()
     today = datetime.now().date()
-    for i in range(DAYS):
+    offsets = list(range(-AHEAD, 0)) + list(range(DAYS))  # 先の日付 → 今日 → 過去
+    offsets.sort()                                        # 未来が上、過去が下
+    for i in offsets:
         d = today - timedelta(days=i)
         date = d.strftime("%Y-%m-%d")
         folder = os.path.join(OUTPUT, date)
@@ -195,7 +201,9 @@ def collect():
         if items:
             days.append({
                 "date": date,
-                "label": "%d月%d日（%s）" % (d.month, d.day, WEEK[d.weekday()]),
+                "label": "%d月%d日（%s）%s" % (
+                    d.month, d.day, WEEK[d.weekday()],
+                    "　投稿予定日" if d > today else ""),
                 "items": items,
             })
     return days
