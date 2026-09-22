@@ -99,6 +99,73 @@ def body_of_instagram(text):
     return "\n".join(out).strip()
 
 
+REPLY_OPEN = re.compile(r"^-{2,}\s*返信案.*?-{2,}\s*$")
+REPLY_CLOSE = re.compile(r"^-{2,}\s*ここまで\s*-{2,}\s*$")
+REPLY_URL = re.compile(r"投稿URL[：:]\s*(https?://\S+)")
+REPLY_HEAD = re.compile(r"^候補\d+.*?(@[A-Za-z0-9_]+)")
+
+
+def reply_items(folder, date):
+    """x_reply_candidates.txt から、送れる形の返信案だけを取り出す。
+
+    返信はいいねの10倍の重みがあり、フォロワー数に依存せず相手のフォロワーに届く
+    唯一の外部露出経路（SKILL.md 第6章）。**それがデスクに1件も出ていなかった。**
+    案は毎日作られているのに、作業者の画面には X と Instagram しか並んでおらず、
+    09-03 以降ほぼ全件が「生成済・未送信」のまま台帳に積み上がっていた。
+
+    本文は `--- 返信案（…） ---` と `--- ここまで ---` にはさまれた部分だけを取る。
+    その手前にある「投稿URL：」が返信先。どちらも無い塊は候補として出さない
+    （返信先の分からない本文を出すと、貼る先を人間に探させることになる）。
+    """
+    raw = read_text(os.path.join(folder, "x_reply_candidates.txt"))
+    if not raw.strip():
+        return []
+    lines = raw.split("\n")
+    out = []
+    i = 0
+    while i < len(lines):
+        if not REPLY_OPEN.match(lines[i].strip()):
+            i += 1
+            continue
+        body = []
+        j = i + 1
+        while j < len(lines) and not REPLY_CLOSE.match(lines[j].strip()):
+            body.append(lines[j])
+            j += 1
+        text = "\n".join(body).strip()
+        # 直前までさかのぼって、返信先のURLと相手のアカウント名を拾う
+        target, who = "", ""
+        for k in range(i - 1, -1, -1):
+            if not target:
+                m = REPLY_URL.search(lines[k])
+                if m:
+                    target = m.group(1)
+            m2 = REPLY_HEAD.match(lines[k].strip())
+            if m2:
+                who = m2.group(1)
+                break
+        if text and target:
+            out.append({
+                "key": "reply%d" % (len(out) + 1),
+                "date": date,
+                "label": "X 返信%s（@entame_rosai）" % ("・" + who if who else ""),
+                "account": "@entame_rosai",
+                "text": text,
+                "chars": len(text.replace("\n", "")),
+                "lines": len(text.split("\n")),
+                "hashtags": len(re.findall(r"#[^\s#]+", text)),
+                "limit": 140,
+                "status": "（返信。台帳は「X（返信）」の行）",
+                "url": "",
+                "replyTo": target,
+                "images": [],
+                "alt": "",
+                "check": check(text),
+            })
+        i = j + 1
+    return out
+
+
 def ledger():
     """posting_log.md の表から、日付×媒体ごとの状態と投稿URLを拾う。
 
@@ -198,6 +265,7 @@ def collect():
                 "alt": read_text(os.path.join(folder, altfile)).strip(),
                 "check": check(text),
             })
+        items.extend(reply_items(folder, date))
         if items:
             days.append({
                 "date": date,

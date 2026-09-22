@@ -412,12 +412,16 @@ footer{margin-top:40px; padding-top:16px; border-top:1px solid var(--line);
     // 投稿画面をそのまま開く。コピーと同時にやるので、貼るところから始められる。
     // ※ 本文を URL に載せて開く形（intent）は使わない。あの画面では画像を添付できず、
     //   画像とALTが必須のこの運用では、かえって手戻りになる。
-    var open = el('button', 'copy open', item.key === 'ig' ? 'コピーして Instagram を開く'
-                                                           : 'コピーして X を開く');
+    // 返信の案は、返信先の投稿そのものを開く。作業者に相手を探させない。
+    var open = el('button', 'copy open',
+      item.replyTo ? 'コピーして 返信先の投稿を開く'
+                   : (item.key === 'ig' ? 'コピーして Instagram を開く'
+                                        : 'コピーして X を開く'));
     open.addEventListener('click', function(){
       copy(item.text, '本文');
-      window.open(item.key === 'ig' ? 'https://www.instagram.com/'
-                                    : 'https://x.com/compose/post',
+      window.open(item.replyTo ? item.replyTo
+                               : (item.key === 'ig' ? 'https://www.instagram.com/'
+                                                    : 'https://x.com/compose/post'),
                   '_blank', 'noopener');
     });
     actions.appendChild(open);
