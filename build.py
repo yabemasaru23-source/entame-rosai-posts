@@ -90,10 +90,19 @@ def body_of_instagram(text):
             break
     if start is None:
         return ""
+    # キャプションが ``` で囲まれている回は、その中だけを取る
+    # （囲みの外にある「ハッシュタグ13個…」などの検証メモを本文に混ぜない）
+    rest = lines[start:]
+    first = next((i for i, l in enumerate(rest) if l.strip()), None)
+    if first is not None and rest[first].strip().startswith("```"):
+        end = next((i for i in range(first + 1, len(rest))
+                    if rest[i].strip().startswith("```")), len(rest))
+        return "\n".join(rest[first + 1:end]).strip()
     out = []
     for line in lines[start:]:
         s = line.strip()
-        if s.startswith("## ") or SEP.match(s):
+        # Markdown の区切り「---」も本文の終わり（09-07・09-10 は末尾に混ざっていた）
+        if s.startswith("## ") or SEP.match(s) or s == "---":
             break
         out.append(line)
     return "\n".join(out).strip()
@@ -227,6 +236,62 @@ def check(text):
     return {"errors": errors, "warns": warns}
 
 
+IG_REF = re.compile(r"output/(\d{4}-\d{2}-\d{2})/instagram/")
+
+
+def instagram_backlog(led, oldest):
+    """10日の窓より前に作られ、台帳でまだ「未投稿」の Instagram を拾う（2026-09-28 追加）。
+
+    第2期は「滞留が0本になるまで新規カルーセルを作らない」決まりなので、
+    出すべきものは古い日付のフォルダにしか無い。窓で切ると、
+    **いちばん出してほしいものがデスクから消える**（本人指摘・09-28）。
+    素材を別の日のフォルダから流用した回（09-03＝08-27の8枚）は、
+    instagram_post.md に書かれた参照先から画像と代替テキストを取る。
+    """
+    out = []
+    for date in sorted(os.listdir(OUTPUT)):
+        if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", date) or date >= oldest:
+            continue
+        folder = os.path.join(OUTPUT, date)
+        raw = read_text(os.path.join(folder, "instagram_post.md"))
+        if not raw.strip():
+            continue
+        rec = led.get((date[5:], "Instagram"), {})
+        if "未投稿" not in rec.get("status", ""):
+            continue
+        text = body_of_instagram(raw)
+        if not text:
+            continue
+        src = date
+        if not os.path.isdir(os.path.join(folder, "instagram")):
+            m = IG_REF.search(raw)
+            if m:
+                src = m.group(1)
+        d = datetime.strptime(date, "%Y-%m-%d").date()
+        out.append({
+            "date": date,
+            "label": "%d月%d日（%s）作成　まだ投稿されていない Instagram" % (
+                d.month, d.day, WEEK[d.weekday()]),
+            "items": [{
+                "key": "ig",
+                "date": date,
+                "label": "Instagram（@entame_rosai）",
+                "account": "@entame_rosai",
+                "text": text,
+                "chars": len(text.replace("\n", "")),
+                "lines": len(text.split("\n")),
+                "hashtags": len(re.findall(r"#[^\s#]+", text)),
+                "limit": 0,
+                "status": rec.get("status", ""),
+                "url": rec.get("url", ""),
+                "images": copy_images(src, "instagram"),
+                "alt": read_text(os.path.join(OUTPUT, src, "instagram_alt_text.txt")).strip(),
+                "check": check(text),
+            }],
+        })
+    return out
+
+
 def collect():
     days = []
     led = ledger()
@@ -274,7 +339,8 @@ def collect():
                     "　投稿予定日" if d > today else ""),
                 "items": items,
             })
-    return days
+    oldest = (today - timedelta(days=DAYS - 1)).strftime("%Y-%m-%d")
+    return instagram_backlog(led, oldest) + days   # 出してほしいものを一番上に
 
 
 def main():
