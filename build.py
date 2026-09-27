@@ -112,6 +112,10 @@ REPLY_OPEN = re.compile(r"^-{2,}\s*返信案.*?-{2,}\s*$")
 REPLY_CLOSE = re.compile(r"^-{2,}\s*ここまで\s*-{2,}\s*$")
 REPLY_URL = re.compile(r"投稿URL[：:]\s*(https?://\S+)")
 REPLY_HEAD = re.compile(r"^候補\d+.*?(@[A-Za-z0-9_]+)")
+REPLY_EXP = re.compile(r"有効期限[^0-9\n]{0,8}(\d{2})-(\d{2})")
+# 期限の書いていない返信案は、作った日から何日まで出すか。
+# 相手の投稿から日が空くと唐突になる（09-21〜09-23 の千秋楽への案を 09-24 に破棄した）
+REPLY_FRESH_DAYS = 2
 
 
 def reply_items(folder, date):
@@ -154,7 +158,21 @@ def reply_items(folder, date):
                 who = m2.group(1)
                 break
         if text and target:
+            # 有効期限（「有効期限 09-29」「有効期限：**09-29（月）まで**」）。無ければ空
+            exp = ""
+            for k in range(i - 1, -1, -1):
+                m3 = REPLY_EXP.search(lines[k])
+                if m3:
+                    exp = "%s-%s-%s" % (date[:4], m3.group(1), m3.group(2))
+                    break
+                if REPLY_HEAD.match(lines[k].strip()):
+                    break
+            if not exp:
+                m3 = REPLY_EXP.search(raw)
+                if m3:
+                    exp = "%s-%s-%s" % (date[:4], m3.group(1), m3.group(2))
             out.append({
+                "expires": exp,
                 "key": "reply%d" % (len(out) + 1),
                 "date": date,
                 "label": "X 返信%s（@entame_rosai）" % ("・" + who if who else ""),
@@ -298,6 +316,7 @@ def collect():
     today = datetime.now().date()
     offsets = list(range(-AHEAD, 0)) + list(range(DAYS))  # 先の日付 → 今日 → 過去
     offsets.sort()                                        # 未来が上、過去が下
+    seen_reply = set()
     for i in offsets:
         d = today - timedelta(days=i)
         date = d.strftime("%Y-%m-%d")
@@ -330,7 +349,20 @@ def collect():
                 "alt": read_text(os.path.join(folder, altfile)).strip(),
                 "check": check(text),
             })
-        items.extend(reply_items(folder, date))
+        for r in reply_items(folder, date):
+            # 期限切れ・古い返信案はデスクに出さない（送られると唐突になる）
+            exp = r["expires"] or (d + timedelta(days=REPLY_FRESH_DAYS)).strftime("%Y-%m-%d")
+            if exp < today.strftime("%Y-%m-%d"):
+                continue
+            # 同じ相手への繰り越しは、いちばん新しい日の1件だけ残す
+            if r["replyTo"] in seen_reply:
+                continue
+            seen_reply.add(r["replyTo"])
+            rec = led.get((d.strftime("%m-%d"), "X（返信）"), {})
+            if re.search(r"送信済", rec.get("status", "")):
+                r["status"] = "送信済"
+            r["deadline"] = exp
+            items.append(r)
         if items:
             days.append({
                 "date": date,
@@ -341,6 +373,88 @@ def collect():
             })
     oldest = (today - timedelta(days=DAYS - 1)).strftime("%Y-%m-%d")
     return instagram_backlog(led, oldest) + days   # 出してほしいものを一番上に
+
+
+def md(date):
+    d = datetime.strptime(date, "%Y-%m-%d").date()
+    return "%d/%d（%s）" % (d.month, d.day, WEEK[d.weekday()])
+
+
+def todo_list(days, led):
+    """画面のいちばん上に出す「今日やること」（2026-09-28 本人依頼で追加）。
+
+    カードを上から眺めても、何を・いつまでに・どの順でやるかが分からなかった。
+    とくに返信は期限があるのに、どこにも期限が出ていなかった。
+    各行は該当カードへのリンク（cid）を持つ。
+    """
+    today = datetime.now().date()
+    ts = today.strftime("%Y-%m-%d")
+    out = []
+
+    def cid(it):
+        return "c-%s-%s" % (it["date"], it["key"])
+
+    items = [it for d in days for it in d["items"]]
+    done = lambda it: bool(re.search(r"投稿済|送信済", it["status"]))
+
+    # 1. 今日の X（@entame_rosai）
+    for it in items:
+        if it["key"] == "x" and it["date"] == ts and not done(it):
+            out.append({"due": "今日", "who": "作業者",
+                        "title": "X（@entame_rosai）の今日の投稿",
+                        "detail": "画像%d枚を添付 → 代替テキストを入れる → 本文を貼る、の順。"
+                                  "代替テキストは直近の投稿で入っていません。X は投稿後に足せません。"
+                                  % len(it["images"]),
+                        "cid": cid(it)})
+    # 2. 返信（期限の近い順）
+    reps = sorted([it for it in items if it["key"].startswith("reply") and not done(it)],
+                  key=lambda it: it["deadline"])
+    for it in reps:
+        who = re.search(r"@[A-Za-z0-9_]+", it["label"].split("（")[0])
+        out.append({"due": "期限 " + md(it["deadline"]) + ("（今日まで）" if it["deadline"] == ts else ""),
+                    "who": "作業者",
+                    "title": "返信を送る：%s" % (who.group(0) if who else "返信先"),
+                    "detail": "「コピーして 返信先の投稿を開く」→ 返信欄に貼る。"
+                              "送る前に、左下のアカウントが @entame_rosai か必ず確認。"
+                              "期限を過ぎたら送らない。",
+                    "cid": cid(it)})
+    # 3. たまっている Instagram（古い順に1本ずつ・週1回）
+    ig = [it for d in days for it in d["items"]
+          if it["key"] == "ig" and it["date"] < ts and not done(it)]
+    ig.sort(key=lambda it: it["date"])
+    if ig:
+        it = ig[0]
+        out.append({"due": "今日" if today.weekday() == 0 else "次の月曜",
+                    "who": "作業者",
+                    "title": "Instagram を1本投稿（%s作成の分）" % md(it["date"]),
+                    "detail": "画像%d枚をこの順で添付し、1枚ずつ代替テキストを入れる。"
+                              "たまっているのは%d本。古い順に週1回（月曜）。"
+                              % (len(it["images"]), len(ig)),
+                    "cid": cid(it)})
+    # 4. @yabemasaru23（火曜）。いちばん近い未投稿の1本
+    ya = sorted([it for it in items if it["key"] == "yabe" and not done(it)],
+                key=lambda it: abs((datetime.strptime(it["date"], "%Y-%m-%d").date() - today).days))
+    if ya:
+        it = ya[0]
+        out.append({"due": md(it["date"]) if it["date"] >= ts else "未投稿のまま",
+                    "who": "矢部さん",
+                    "title": "X（@yabemasaru23）の投稿",
+                    "detail": "矢部さん個人のアカウント。実感と違う箇所があれば直してから。",
+                    "cid": cid(it)})
+    # 5. デスクに載らないもの（note）。台帳で未投稿のものを拾う
+    for (date, media), rec in sorted(led.items()):
+        if media == "note" and "未投稿" in rec["status"]:
+            out.append({"due": "未公開のまま", "who": "矢部さん",
+                        "title": "note の記事を公開（%s作成）" % date.replace("-", "/"),
+                        "detail": "このデスクには載っていません（note は矢部さんの手元の下書き）。"
+                                  "公開するときは見出し画像を必ず設定。",
+                        "cid": ""})
+    # 6. 投稿したあと
+    out.append({"due": "投稿のたび", "who": "作業者",
+                "title": "投稿URLと名前を、そのカードの欄に保存",
+                "detail": "記録が集まらないと、何が出たかを後から確かめられません。",
+                "cid": ""})
+    return out
 
 
 def main():
@@ -359,6 +473,7 @@ def main():
     data = {
         "account": "@entame_rosai",
         "days": days,
+        "todo": todo_list(days, ledger()),
         "builtAt": datetime.now().strftime("%Y-%m-%d %H:%M"),
         # 空なら、保存はその端末のブラウザにだけ残る（共有されない）
         "endpoint": conf.get("endpoint", ""),

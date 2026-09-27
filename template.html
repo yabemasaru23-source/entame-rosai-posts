@@ -39,6 +39,33 @@ header h1{font-size:1.4rem; margin:0 0 4px; letter-spacing:.02em}
 .howto ol{margin:0; padding-left:1.2em}
 .howto li{margin:3px 0}
 .howto .warn{margin:10px 0 0; padding-top:10px; border-top:1px solid var(--line); color:var(--ng)}
+.todo{
+  background:var(--card); border:2px solid var(--accent); border-radius:12px;
+  padding:14px 16px; margin:18px 0 10px;
+}
+.todo h2{font-size:1rem; margin:0 0 10px; letter-spacing:.04em}
+.todo ol{margin:0; padding:0; list-style:none; counter-reset:t}
+.todo li{
+  counter-increment:t; position:relative; padding:10px 0 10px 34px;
+  border-top:1px solid var(--line);
+}
+.todo li:first-child{border-top:none; padding-top:2px}
+.todo li::before{
+  content:counter(t); position:absolute; left:0; top:10px;
+  width:22px; height:22px; border-radius:50%; background:var(--accent); color:#fff;
+  font-size:.75rem; font-weight:700; display:flex; align-items:center; justify-content:center;
+}
+.todo li:first-child::before{top:2px}
+.todo .t{font-weight:700}
+.todo .t a{color:var(--ink); text-decoration:underline; text-underline-offset:3px}
+.todo .due{
+  display:inline-block; font-size:.72rem; font-weight:700; padding:1px 8px; border-radius:999px;
+  background:var(--gold); color:#fff; margin-right:6px; vertical-align:1px;
+}
+.todo .who{font-size:.72rem; color:var(--sub); margin-left:6px}
+.todo .d{display:block; font-size:.82rem; color:var(--sub); margin-top:2px}
+.chip.deadline{background:var(--ng); color:#fff}
+.card.flash{outline:3px solid var(--gold); outline-offset:2px}
 .bar{display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin:14px 0 18px}
 .bar button{
   font:inherit; font-size:.82rem; padding:6px 12px; border-radius:999px; cursor:pointer;
@@ -181,6 +208,11 @@ footer{margin-top:40px; padding-top:16px; border-top:1px solid var(--line);
       <a href="https://x.com/yabemasaru23" target="_blank" rel="noopener">X @yabemasaru23</a>
     </p>
   </header>
+
+  <section class="todo" id="todo">
+    <h2>今日やること</h2>
+    <ol id="todo-list"></ol>
+  </section>
 
   <section class="howto">
     <h2>つかいかた</h2>
@@ -393,11 +425,17 @@ footer{margin-top:40px; padding-top:16px; border-top:1px solid var(--line);
   function card(item){
     var c = el('div', 'card' + (isDone(item) ? ' done' : ''));
     c.dataset.done = isDone(item) ? '1' : '0';
+    c.id = 'c-' + item.date + '-' + item.key;
 
     var head = el('div', 'head');
     head.appendChild(el('span', 'chip media', item.label));
     head.appendChild(el('span', 'chip ' + (isDone(item) ? 'done' : 'todo'),
-      isDone(item) ? '投稿済' : '未投稿'));
+      isDone(item) ? (item.replyTo ? '送信済' : '投稿済') : (item.replyTo ? '未送信' : '未投稿')));
+    if (item.deadline && !isDone(item)) {
+      var dl = item.deadline.split('-');
+      head.appendChild(el('span', 'chip deadline',
+        '送る期限 ' + (+dl[1]) + '/' + (+dl[2]) + ' まで'));
+    }
     if (item.images.length) head.appendChild(el('span', 'chip', '画像' + item.images.length + '枚'));
     c.appendChild(head);
 
@@ -660,6 +698,33 @@ footer{margin-top:40px; padding-top:16px; border-top:1px solid var(--line);
     day.items.forEach(function(item){ sec.appendChild(card(item)); });
     list.appendChild(sec);
   });
+
+  // 今日やること。行を押すと該当カードへ移動して枠を光らせる
+  var todoList = document.getElementById('todo-list');
+  (DATA.todo || []).forEach(function(t){
+    var li = el('li');
+    var head = el('div', 't');
+    head.appendChild(el('span', 'due', t.due));
+    if (t.cid && document.getElementById(t.cid)) {
+      var a = el('a', null, t.title);
+      a.href = '#' + t.cid;
+      a.addEventListener('click', function(e){
+        e.preventDefault();
+        var target = document.getElementById(t.cid);
+        target.scrollIntoView({behavior:'smooth', block:'start'});
+        target.classList.add('flash');
+        setTimeout(function(){ target.classList.remove('flash'); }, 1800);
+      });
+      head.appendChild(a);
+    } else {
+      head.appendChild(document.createTextNode(t.title));
+    }
+    head.appendChild(el('span', 'who', '担当：' + t.who));
+    li.appendChild(head);
+    li.appendChild(el('span', 'd', t.detail));
+    todoList.appendChild(li);
+  });
+  if (!todoList.children.length) document.getElementById('todo').style.display = 'none';
   dock();
   pull();          // 共有されている記録を読み込む（endpoint が空なら何もしない）
 
