@@ -694,6 +694,7 @@ footer{margin-top:40px; padding-top:16px; border-top:1px solid var(--line);
 
   DATA.days.forEach(function(day){
     var sec = el('section', 'day');
+    if (day.backlog) sec.dataset.backlog = '1';
     sec.appendChild(el('h2', null, day.label));
     day.items.forEach(function(item){ sec.appendChild(card(item)); });
     list.appendChild(sec);
@@ -725,6 +726,22 @@ footer{margin-top:40px; padding-top:16px; border-top:1px solid var(--line);
     todoList.appendChild(li);
   });
   if (!todoList.children.length) document.getElementById('todo').style.display = 'none';
+  // 「まだ投稿されていない Instagram」は台帳を元に一番上へ出している。
+  // デスクで URL が保存されたら（共有の記録が来たら）、見出しを直していちばん下へ回す（2026-10-03 本人指摘）。
+  // 台帳への転記は毎日の作業でおこなうので、それまでの間も上に居座らないようにする。
+  function settleBacklog(){
+    Array.prototype.forEach.call(document.querySelectorAll('section.day[data-backlog="1"]'), function(s){
+      var cards = s.querySelectorAll('.card');
+      var done = cards.length && Array.prototype.every.call(cards, function(c){ return c.dataset.done === '1'; });
+      if (!done || s.dataset.settled) return;
+      s.dataset.settled = '1';
+      var h = s.querySelector('h2');
+      h.textContent = h.textContent.replace('まだ投稿されていない Instagram', '投稿済みの Instagram（滞留していた分）');
+      list.appendChild(s);
+    });
+  }
+  redraw.push(settleBacklog);
+  settleBacklog();
   dock();
   pull();          // 共有されている記録を読み込む（endpoint が空なら何もしない）
 

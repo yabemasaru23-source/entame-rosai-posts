@@ -288,6 +288,7 @@ def instagram_backlog(led, oldest):
         d = datetime.strptime(date, "%Y-%m-%d").date()
         out.append({
             "date": date,
+            "backlog": True,   # デスクで URL が保存されたら、画面側で下へ回す（2026-10-03）
             "label": "%d月%d日（%s）作成　まだ投稿されていない Instagram" % (
                 d.month, d.day, WEEK[d.weekday()]),
             "items": [{
