@@ -490,6 +490,10 @@ def main():
     hero = os.path.join(os.path.dirname(HERE), "assets", "photos", "01_spotlights.jpg")
     if os.path.exists(hero):
         shutil.copy(hero, os.path.join(ASSETS, "hero.jpg"))
+    # ロゴ（X のプロフィール画像と同じ盾のマーク。2026-10-03 本人「ロゴとか入れてください」）
+    logo = os.path.join(os.path.dirname(HERE), "assets", "brand", "logo.png")
+    if os.path.exists(logo):
+        shutil.copy(logo, os.path.join(ASSETS, "logo.png"))
     days = collect()
     if not days:
         print("output/ に直近%d日分が見つかりません。" % DAYS)

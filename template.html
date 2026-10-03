@@ -5,42 +5,45 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title>芸能労災 投稿デスク</title>
+<link rel="icon" href="assets/logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Roboto+Mono:wght@400;500&display=swap">
 <style>
-/* 見た目は「みんなのびわから基金 投稿デスク」と同じ体系にそろえた（2026-10-03 本人依頼）。
-   色・書体・角丸・影・部品の名前を共通にしている。直すときは両方を見比べる。 */
+/* 画面の流れ・部品は「みんなのびわから基金 投稿デスク」と同じ体系にそろえた（2026-10-03 本人依頼）。
+   色だけは変えている（本人「色合いは変えてください」）。芸能労災はロゴの濃紺・青・金に合わせる。
+   部品の名前は共通なので、直すときは両方を見比べる。 */
 :root{
-  --bg:#FAF6EC; --surface:#FFFFFF; --surface2:#F4EDDF; --surface3:#EBE1CE;
-  --ink:#2A2117; --ink2:#7B6B55; --line:#E5DAC6;
-  --c1:#E2892B; --c2:#3F8F63; --c3:#2C6AA0; --c4:#D8A00C; --c5:#C4564A;
-  --on-accent:#FFFDF8;
-  --ok:#3F8F63; --hold:#B07B22; --over:#C4564A;
-  --flag:#8A6A12; --flag-soft:#FBF0D4;
+  --bg:#F3F5FA; --surface:#FFFFFF; --surface2:#EBEFF7; --surface3:#DDE3EF;
+  --ink:#0E1A33; --ink2:#5A6785; --line:#D7DEEB;
+  --c1:#1F5BD8; --c2:#2F8A60; --c3:#14306E; --c4:#D9960F; --c5:#C64A4A;
+  --on-accent:#FFFFFF;
+  --ok:#2F8A60; --hold:#B07B22; --over:#C64A4A;
+  --flag:#7A5A0E; --flag-soft:#FBF1D6;
+  --band:#0B1A44;
   --radius:18px;
-  --shadow:0 2px 4px rgba(60,40,15,.05),0 12px 30px rgba(60,40,15,.07);
-  --shadow-lift:0 4px 10px rgba(60,40,15,.09),0 20px 44px rgba(60,40,15,.12);
+  --shadow:0 2px 4px rgba(14,26,51,.05),0 12px 30px rgba(14,26,51,.07);
+  --shadow-lift:0 4px 10px rgba(14,26,51,.09),0 20px 44px rgba(14,26,51,.12);
 }
 @media (prefers-color-scheme:dark){
   :root:not([data-theme="light"]){
-    --bg:#16130E; --surface:#211C14; --surface2:#2C251A; --surface3:#382F22;
-    --ink:#F4EEE1; --ink2:#AC9C85; --line:#3A3124;
-    --c1:#F0A755; --c2:#6DBE8F; --c3:#6BA9DC; --c4:#EDC64A; --c5:#E28A80;
-    --on-accent:#1B1408;
-    --ok:#6DBE8F; --hold:#D6AA5A; --over:#E28A80;
-    --flag:#DEC07A; --flag-soft:#2E2614;
+    --bg:#0B1020; --surface:#141B2E; --surface2:#1C2540; --surface3:#26304F;
+    --ink:#EAF0FF; --ink2:#9AA8C7; --line:#2A3554;
+    --c1:#6E9BFF; --c2:#6DC79A; --c3:#9DB6F5; --c4:#F2C14E; --c5:#F08A8A;
+    --on-accent:#0B1020;
+    --ok:#6DC79A; --hold:#D6AA5A; --over:#F08A8A;
+    --flag:#E6C877; --flag-soft:#2A2614;
     --shadow:0 2px 4px rgba(0,0,0,.3),0 12px 30px rgba(0,0,0,.3);
     --shadow-lift:0 4px 10px rgba(0,0,0,.36),0 20px 44px rgba(0,0,0,.4);
   }
 }
 :root[data-theme="dark"]{
-  --bg:#16130E; --surface:#211C14; --surface2:#2C251A; --surface3:#382F22;
-  --ink:#F4EEE1; --ink2:#AC9C85; --line:#3A3124;
-  --c1:#F0A755; --c2:#6DBE8F; --c3:#6BA9DC; --c4:#EDC64A; --c5:#E28A80;
-  --on-accent:#1B1408;
-  --ok:#6DBE8F; --hold:#D6AA5A; --over:#E28A80;
-  --flag:#DEC07A; --flag-soft:#2E2614;
+  --bg:#0B1020; --surface:#141B2E; --surface2:#1C2540; --surface3:#26304F;
+  --ink:#EAF0FF; --ink2:#9AA8C7; --line:#2A3554;
+  --c1:#6E9BFF; --c2:#6DC79A; --c3:#9DB6F5; --c4:#F2C14E; --c5:#F08A8A;
+  --on-accent:#0B1020;
+  --ok:#6DC79A; --hold:#D6AA5A; --over:#F08A8A;
+  --flag:#E6C877; --flag-soft:#2A2614;
   --shadow:0 2px 4px rgba(0,0,0,.3),0 12px 30px rgba(0,0,0,.3);
   --shadow-lift:0 4px 10px rgba(0,0,0,.36),0 20px 44px rgba(0,0,0,.4);
 }
@@ -67,15 +70,16 @@ h2::before{content:"";width:13px;height:13px;border-radius:50%;background:var(--
 .hero{display:flex;flex-direction:column;gap:18px}
 .band{position:relative;border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);
   min-height:230px;display:flex;flex-direction:column;justify-content:flex-end;gap:8px;
-  padding:26px 30px;color:#FFF8EA;background:#2A2117 center/cover no-repeat}
+  padding:26px 30px;color:#F2F5FF;background:var(--band) center/cover no-repeat}
 .band::before{content:"";position:absolute;inset:0;
-  background:linear-gradient(100deg,rgba(28,18,8,.86) 0%,rgba(40,24,8,.62) 55%,rgba(40,24,8,.25) 100%)}
+  background:linear-gradient(100deg,rgba(6,14,40,.9) 0%,rgba(8,22,66,.68) 55%,rgba(8,22,66,.3) 100%)}
 .band > *{position:relative}
-.band .brand{position:absolute;top:20px;left:30px;display:flex;align-items:center;gap:10px;font-size:12px}
-.band .brand b{background:#FFF8EA;color:#2A2117;border-radius:999px;padding:3px 12px;font-weight:700}
-.band .brand span{font-family:"Roboto Mono",monospace;opacity:.85}
-.band .eyebrow{color:#F0A755}
-.band h1{color:#FFF8EA}
+.band .brand{position:absolute;top:20px;left:30px;display:flex;align-items:center;gap:12px;font-size:12px}
+.band .brand img{width:52px;height:52px;border-radius:12px;display:block;box-shadow:0 4px 14px rgba(0,0,0,.35)}
+.band .brand b{font-family:"Shippori Mincho",serif;font-size:18px;font-weight:700;letter-spacing:.06em;display:block;line-height:1.2}
+.band .brand span{font-family:"Roboto Mono",monospace;opacity:.8}
+.band .eyebrow{color:#F4B63A}
+.band h1{color:#FFFFFF}
 .band .sub{font-size:13px;font-weight:700;opacity:.92}
 .band .org{font-size:11.5px;opacity:.8}
 .accounts{display:flex;flex-wrap:wrap;gap:9px}
@@ -264,7 +268,7 @@ dialog img{width:100%;height:auto;border-radius:18px;display:block}
 
 @media (max-width:660px){
   #root{padding:18px 14px 80px;gap:26px}
-  .band{padding:56px 20px 22px;min-height:0}
+  .band{padding:92px 20px 22px;min-height:0}
   .band .brand{left:20px}
   .card{grid-template-columns:1fr}
   .thumb{max-width:240px}
@@ -278,7 +282,7 @@ dialog img{width:100%;height:auto;border-radius:18px;display:block}
 <div id="root">
   <header class="hero">
     <div class="band" id="band">
-      <div class="brand"><b>芸能労災</b><span>@entame_rosai</span></div>
+      <div class="brand"><img src="assets/logo.png" alt="芸能労災のロゴ"><div><b>芸能労災</b><span>@entame_rosai</span></div></div>
       <div class="eyebrow">POST DESK</div>
       <h1>芸能労災 投稿デスク</h1>
       <div class="sub">フリーランス表現者の労災特別加入を、届く言葉で広める</div>
