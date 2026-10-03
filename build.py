@@ -30,6 +30,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 OUTPUT = os.path.join(ROOT, "output")
 ASSETS = os.path.join(HERE, "assets")
+LEDGER = os.path.join(OUTPUT, "posting_log.md")
 
 sys.path.insert(0, ROOT)
 from tools import rules  # noqa: E402
@@ -458,9 +459,37 @@ def todo_list(days, led):
     return out
 
 
+def followers():
+    """台帳の実測表から、いちばん新しい日のフォロワー数を拾う（画面上部の数字の札に出す）。"""
+    rows = []
+    on = False
+    for line in read_text(LEDGER).splitlines():
+        if line.startswith("| 日付 | X | Instagram | note"):
+            on = True
+            continue
+        if on and not line.startswith("|"):
+            break
+        if on:
+            cells = [c.strip() for c in line.strip("|").split("|")]
+            m = re.search(r"(\d{2})-(\d{2})", cells[0])
+            if not m or len(cells) < 4:
+                continue
+            n = [re.search(r"(\d+)人", c) for c in cells[1:4]]
+            rows.append((m.group(0), [int(x.group(1)) if x else None for x in n]))
+    if not rows:
+        return None
+    date, (x, ig, note) = max(rows)
+    return {"date": date, "x": x, "ig": ig, "note": note}
+
+
 def main():
     if os.path.isdir(ASSETS):
         shutil.rmtree(ASSETS)          # 10日から外れた画像を置き去りにしない
+    os.makedirs(ASSETS)
+    # ヘッダーの写真（びわから基金の投稿デスクと同じ作り。無人の舞台の写真だけを使う）
+    hero = os.path.join(os.path.dirname(HERE), "assets", "photos", "01_spotlights.jpg")
+    if os.path.exists(hero):
+        shutil.copy(hero, os.path.join(ASSETS, "hero.jpg"))
     days = collect()
     if not days:
         print("output/ に直近%d日分が見つかりません。" % DAYS)
@@ -476,6 +505,9 @@ def main():
         "days": days,
         "todo": todo_list(days, ledger()),
         "builtAt": datetime.now().strftime("%Y-%m-%d %H:%M"),
+        "today": datetime.now().strftime("%Y-%m-%d"),
+        "followers": followers(),
+        "hero": "assets/hero.jpg" if os.path.exists(os.path.join(ASSETS, "hero.jpg")) else "",
         # 空なら、保存はその端末のブラウザにだけ残る（共有されない）
         "endpoint": conf.get("endpoint", ""),
     }

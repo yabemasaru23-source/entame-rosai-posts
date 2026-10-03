@@ -5,262 +5,347 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title>芸能労災 投稿デスク</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@600;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Roboto+Mono:wght@400;500&display=swap">
 <style>
+/* 見た目は「みんなのびわから基金 投稿デスク」と同じ体系にそろえた（2026-10-03 本人依頼）。
+   色・書体・角丸・影・部品の名前を共通にしている。直すときは両方を見比べる。 */
 :root{
-  --bg:#f6f5f2; --card:#fff; --ink:#1b1c1f; --sub:#5f6470; --line:#e2e0da;
-  --accent:#1d2a5c; --gold:#a98033; --ok:#2f6b46; --ng:#a52a2a; --warn:#8a6a1f;
-  --chipbg:#eceae4;
+  --bg:#FAF6EC; --surface:#FFFFFF; --surface2:#F4EDDF; --surface3:#EBE1CE;
+  --ink:#2A2117; --ink2:#7B6B55; --line:#E5DAC6;
+  --c1:#E2892B; --c2:#3F8F63; --c3:#2C6AA0; --c4:#D8A00C; --c5:#C4564A;
+  --on-accent:#FFFDF8;
+  --ok:#3F8F63; --hold:#B07B22; --over:#C4564A;
+  --flag:#8A6A12; --flag-soft:#FBF0D4;
+  --radius:18px;
+  --shadow:0 2px 4px rgba(60,40,15,.05),0 12px 30px rgba(60,40,15,.07);
+  --shadow-lift:0 4px 10px rgba(60,40,15,.09),0 20px 44px rgba(60,40,15,.12);
 }
 @media (prefers-color-scheme:dark){
   :root:not([data-theme="light"]){
-    --bg:#15161a; --card:#1e2026; --ink:#eceef2; --sub:#a0a6b2; --line:#33363f;
-    --accent:#9db4f0; --gold:#d3ad63; --ok:#79c79a; --ng:#f08a8a;
-    --warn:#d9bb6f; --chipbg:#2a2d35;
+    --bg:#16130E; --surface:#211C14; --surface2:#2C251A; --surface3:#382F22;
+    --ink:#F4EEE1; --ink2:#AC9C85; --line:#3A3124;
+    --c1:#F0A755; --c2:#6DBE8F; --c3:#6BA9DC; --c4:#EDC64A; --c5:#E28A80;
+    --on-accent:#1B1408;
+    --ok:#6DBE8F; --hold:#D6AA5A; --over:#E28A80;
+    --flag:#DEC07A; --flag-soft:#2E2614;
+    --shadow:0 2px 4px rgba(0,0,0,.3),0 12px 30px rgba(0,0,0,.3);
+    --shadow-lift:0 4px 10px rgba(0,0,0,.36),0 20px 44px rgba(0,0,0,.4);
   }
 }
 :root[data-theme="dark"]{
-  --bg:#15161a; --card:#1e2026; --ink:#eceef2; --sub:#a0a6b2; --line:#33363f;
-  --accent:#9db4f0; --gold:#d3ad63; --ok:#79c79a; --ng:#f08a8a; --warn:#d9bb6f; --chipbg:#2a2d35;
+  --bg:#16130E; --surface:#211C14; --surface2:#2C251A; --surface3:#382F22;
+  --ink:#F4EEE1; --ink2:#AC9C85; --line:#3A3124;
+  --c1:#F0A755; --c2:#6DBE8F; --c3:#6BA9DC; --c4:#EDC64A; --c5:#E28A80;
+  --on-accent:#1B1408;
+  --ok:#6DBE8F; --hold:#D6AA5A; --over:#E28A80;
+  --flag:#DEC07A; --flag-soft:#2E2614;
+  --shadow:0 2px 4px rgba(0,0,0,.3),0 12px 30px rgba(0,0,0,.3);
+  --shadow-lift:0 4px 10px rgba(0,0,0,.36),0 20px 44px rgba(0,0,0,.4);
 }
-*{box-sizing:border-box}
-body{
-  margin:0; background:var(--bg); color:var(--ink);
-  font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP","Yu Gothic",sans-serif;
-  line-height:1.75; -webkit-text-size-adjust:100%;
-}
-.wrap{max-width:780px; margin:0 auto; padding:24px 16px 80px}
-header h1{font-size:1.4rem; margin:0 0 4px; letter-spacing:.02em}
-.meta{color:var(--sub); font-size:.85rem; margin:0}
-.howto{
-  background:var(--card); border:1px solid var(--line); border-radius:12px;
-  padding:14px 16px; margin:18px 0 10px; font-size:.9rem;
-}
-.howto h2{font-size:.9rem; margin:0 0 8px; color:var(--gold); letter-spacing:.06em}
-.howto ol{margin:0; padding-left:1.2em}
-.howto li{margin:3px 0}
-.howto .warn{margin:10px 0 0; padding-top:10px; border-top:1px solid var(--line); color:var(--ng)}
-.todo{
-  background:var(--card); border:2px solid var(--accent); border-radius:12px;
-  padding:14px 16px; margin:18px 0 10px;
-}
-.todo h2{font-size:1rem; margin:0 0 10px; letter-spacing:.04em}
-.todo ol{margin:0; padding:0; list-style:none; counter-reset:t}
-.todo li{
-  counter-increment:t; position:relative; padding:10px 0 10px 34px;
-  border-top:1px solid var(--line);
-}
-.todo li:first-child{border-top:none; padding-top:2px}
-.todo li::before{
-  content:counter(t); position:absolute; left:0; top:10px;
-  width:22px; height:22px; border-radius:50%; background:var(--accent); color:#fff;
-  font-size:.75rem; font-weight:700; display:flex; align-items:center; justify-content:center;
-}
-.todo li:first-child::before{top:2px}
-.todo .t{font-weight:700}
-.todo .t a{color:var(--ink); text-decoration:underline; text-underline-offset:3px}
-.todo .due{
-  display:inline-block; font-size:.72rem; font-weight:700; padding:1px 8px; border-radius:999px;
-  background:var(--gold); color:#fff; margin-right:6px; vertical-align:1px;
-}
-.todo .who{font-size:.72rem; color:var(--sub); margin-left:6px}
-.todo .d{display:block; font-size:.82rem; color:var(--sub); margin-top:2px}
-.chip.deadline{background:var(--ng); color:#fff}
-.card.flash{outline:3px solid var(--gold); outline-offset:2px}
-.bar{display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin:14px 0 18px}
-.bar button{
-  font:inherit; font-size:.82rem; padding:6px 12px; border-radius:999px; cursor:pointer;
-  border:1px solid var(--line); background:var(--card); color:var(--ink);
-}
-.bar button[aria-pressed="true"]{background:var(--accent); color:#fff; border-color:var(--accent)}
-.day{margin:26px 0 0}
-.day > h2{
-  font-size:1rem; margin:0 0 10px; padding-bottom:6px;
-  border-bottom:2px solid var(--line); letter-spacing:.04em;
-}
-.card{
-  background:var(--card); border:1px solid var(--line); border-radius:12px;
-  padding:16px; margin:0 0 14px;
-}
-.card.done{opacity:.72}
-.head{display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:10px}
-.chip{
-  font-size:.74rem; padding:3px 10px; border-radius:999px;
-  background:var(--chipbg); color:var(--sub); white-space:nowrap;
-}
-.chip.media{background:var(--accent); color:#fff}
-.chip.todo{background:var(--gold); color:#fff}
-.chip.done{background:var(--ok); color:#fff}
-pre.body{
-  white-space:pre-wrap; word-break:break-word; margin:0; font:inherit;
-  background:var(--bg); border:1px solid var(--line); border-radius:8px;
-  padding:14px; -webkit-user-select:text; user-select:text;
-}
-.actions{display:flex; gap:8px; flex-wrap:wrap; margin-top:10px}
-button.copy{
-  font:inherit; font-size:.85rem; font-weight:600; padding:9px 18px; border-radius:8px;
-  border:none; background:var(--accent); color:#fff; cursor:pointer;
-}
-button.copy.sub{background:var(--chipbg); color:var(--ink); font-weight:400}
-button.copy.open{background:var(--gold)}
-.account{
-  margin:8px 0 0; font-size:.78rem; color:var(--sub);
-}
-.account b{color:var(--ng)}
-.links{margin:6px 0 0; font-size:.82rem}
-.links a{color:var(--accent); margin-right:14px}
-button.copy:active{transform:translateY(1px)}
-.stats{margin:10px 0 0; font-size:.78rem; color:var(--sub)}
-.stats b{color:var(--ink)}
-.stats .over{color:var(--ng)}
-.check{margin:10px 0 0; font-size:.8rem}
-.check .ok{color:var(--ok)}
-.check ul{margin:4px 0 0; padding-left:1.2em}
-.check li.e{color:var(--ng)}
-.check li.w{color:var(--warn)}
-.imgs{margin-top:12px}
-.imgs h3{font-size:.8rem; margin:0 0 6px; color:var(--sub); font-weight:600}
-.thumbs{display:flex; gap:8px; overflow-x:auto; padding-bottom:4px}
-.thumbs a{flex:0 0 auto; text-align:center; text-decoration:none; color:var(--sub); font-size:.7rem}
-.thumbs img{
-  display:block; width:84px; height:84px; object-fit:cover;
-  border:1px solid var(--line); border-radius:6px; background:var(--bg);
-}
-details.alt{margin-top:10px; font-size:.82rem}
-details.alt summary{cursor:pointer; color:var(--sub)}
-details.alt pre{
-  white-space:pre-wrap; word-break:break-word; font:inherit; font-size:.8rem;
-  background:var(--bg); border:1px solid var(--line); border-radius:8px; padding:10px; margin:8px 0 0;
-}
-.posted{margin:10px 0 0; font-size:.8rem}
-.posted a{color:var(--accent); word-break:break-all}
-.save{
-  margin:12px 0 0; padding:12px; border:1px dashed var(--line);
-  border-radius:8px; background:var(--bg);
-}
-.save h3{font-size:.8rem; margin:0 0 8px; color:var(--sub); font-weight:600}
-.save .row{display:flex; gap:8px; flex-wrap:wrap}
-.save input{
-  flex:1 1 220px; min-width:0; font:inherit; font-size:.85rem; padding:8px 10px;
-  border:1px solid var(--line); border-radius:6px; background:var(--card); color:var(--ink);
-}
-.save input.who{flex:0 1 130px}
-.save button{
-  font:inherit; font-size:.85rem; font-weight:600; padding:8px 18px; border-radius:6px;
-  border:none; background:var(--gold); color:#fff; cursor:pointer;
-}
-.save .msg{margin:8px 0 0; font-size:.78rem; color:var(--ng); min-height:1.2em}
-.save .msg.ok{color:var(--ok)}
-.saved{
-  margin:10px 0 0; padding:10px 12px; border-radius:8px;
-  background:var(--chipbg); font-size:.8rem;
-}
-.saved a{color:var(--accent); word-break:break-all}
-.saved .who{color:var(--sub)}
-.saved button{
-  font:inherit; font-size:.75rem; padding:2px 10px; margin-left:8px;
-  border:1px solid var(--line); border-radius:999px;
-  background:transparent; color:var(--sub); cursor:pointer;
-}
-.dock{
-  position:fixed; left:0; right:0; bottom:0; z-index:5;
-  background:var(--card); border-top:1px solid var(--line);
-  padding:10px 16px calc(10px + env(safe-area-inset-bottom));
-  display:none; gap:10px; align-items:center; justify-content:center; flex-wrap:wrap;
-  box-shadow:0 -4px 14px rgba(0,0,0,.08);
-}
-.dock.on{display:flex}
-.dock span{font-size:.82rem}
-.dock button{
-  font:inherit; font-size:.85rem; font-weight:600; padding:9px 18px; border-radius:8px;
-  border:none; background:var(--accent); color:#fff; cursor:pointer;
-}
-.dock button.sub{background:var(--chipbg); color:var(--ink); font-weight:400}
-#report-pane{
-  margin:26px 0 0; padding:16px; border-radius:12px;
-  background:var(--card); border:2px solid var(--gold);
-}
-#report-pane h2{font-size:1rem; margin:0 0 8px}
-#report-pane p{margin:0 0 10px; font-size:.85rem}
-#report-pane p.sub{margin:10px 0 0; color:var(--sub); font-size:.8rem}
-#report-pane textarea{
-  width:100%; font:inherit; font-size:.85rem; line-height:1.6; padding:10px;
-  border:1px solid var(--line); border-radius:8px;
-  background:var(--bg); color:var(--ink); resize:vertical;
-}
-footer{margin-top:40px; padding-top:16px; border-top:1px solid var(--line);
-  color:var(--sub); font-size:.78rem}
-.toast{
-  position:fixed; left:50%; bottom:24px; transform:translateX(-50%);
-  background:var(--accent); color:#fff; padding:10px 20px; border-radius:999px;
-  font-size:.85rem; opacity:0; pointer-events:none; transition:opacity .18s;
-}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);
+  font-family:"Zen Kaku Gothic New","Hiragino Sans","Yu Gothic UI",system-ui,sans-serif;
+  font-size:15px;line-height:1.75;-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%}
+#root{max-width:1080px;margin:0 auto;padding:26px 22px 96px;display:flex;flex-direction:column;gap:34px}
+a{color:inherit}
+button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
+button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{
+  outline:2px solid var(--c1);outline-offset:2px;border-radius:6px}
+.tone1{--c:var(--c1)} .tone2{--c:var(--c2)} .tone3{--c:var(--c3)}
+.tone4{--c:var(--c4)} .tone5{--c:var(--c5)}
+
+.eyebrow{font-family:"Roboto Mono",ui-monospace,monospace;font-size:11px;letter-spacing:.18em;color:var(--ink2)}
+h1{font-family:"Shippori Mincho",serif;font-weight:700;font-size:clamp(26px,4vw,36px);line-height:1.35;text-wrap:balance}
+h2{font-family:"Shippori Mincho",serif;font-weight:700;font-size:23px;line-height:1.45;
+  display:flex;align-items:center;gap:11px}
+h2::before{content:"";width:13px;height:13px;border-radius:50%;background:var(--c,var(--c1));flex:none}
+.lede{color:var(--ink2);max-width:66ch}
+
+/* ---- ヘッダー ---- */
+.hero{display:flex;flex-direction:column;gap:18px}
+.band{position:relative;border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);
+  min-height:230px;display:flex;flex-direction:column;justify-content:flex-end;gap:8px;
+  padding:26px 30px;color:#FFF8EA;background:#2A2117 center/cover no-repeat}
+.band::before{content:"";position:absolute;inset:0;
+  background:linear-gradient(100deg,rgba(28,18,8,.86) 0%,rgba(40,24,8,.62) 55%,rgba(40,24,8,.25) 100%)}
+.band > *{position:relative}
+.band .brand{position:absolute;top:20px;left:30px;display:flex;align-items:center;gap:10px;font-size:12px}
+.band .brand b{background:#FFF8EA;color:#2A2117;border-radius:999px;padding:3px 12px;font-weight:700}
+.band .brand span{font-family:"Roboto Mono",monospace;opacity:.85}
+.band .eyebrow{color:#F0A755}
+.band h1{color:#FFF8EA}
+.band .sub{font-size:13px;font-weight:700;opacity:.92}
+.band .org{font-size:11.5px;opacity:.8}
+.accounts{display:flex;flex-wrap:wrap;gap:9px}
+.acct{display:flex;align-items:center;gap:9px;text-decoration:none;background:var(--surface);
+  border:1px solid var(--line);border-radius:999px;padding:8px 16px;box-shadow:var(--shadow);
+  transition:transform .15s,box-shadow .15s}
+.acct:hover{transform:translateY(-2px);box-shadow:var(--shadow-lift)}
+.acct b{font-weight:700;font-size:13px}
+.acct .handle{font-family:"Roboto Mono",monospace;font-size:12px;color:var(--ink2)}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--c2);flex:none}
+.savebar{display:flex;align-items:center;gap:9px;font-size:12.5px;color:var(--ink2);
+  background:var(--surface2);border-radius:999px;padding:8px 16px;align-self:flex-start}
+.savebar .dot{background:var(--c1)}
+
+/* ---- 進み具合と数字 ---- */
+.progress{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  padding:18px 20px;display:flex;flex-direction:column;gap:12px;box-shadow:var(--shadow)}
+.ptop{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.ptop b{font-family:"Shippori Mincho",serif;font-size:19px;font-weight:700}
+.ptop .cnt{font-family:"Roboto Mono",monospace;font-size:15px;color:var(--ink2);
+  font-variant-numeric:tabular-nums;margin-left:auto}
+.pbar{display:flex;gap:5px;flex-wrap:wrap}
+.pseg{height:11px;flex:1 1 16px;min-width:16px;border-radius:999px;background:var(--line);border:none;padding:0}
+.pseg.posted{background:var(--c)}
+.plegend{display:flex;gap:16px;flex-wrap:wrap;font-size:11.5px;color:var(--ink2)}
+.plegend span{display:inline-flex;align-items:center;gap:6px}
+.plegend i{width:14px;height:8px;border-radius:999px;display:inline-block;background:var(--line)}
+.plegend i.c{background:var(--c)}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(146px,1fr));gap:11px}
+.tile{border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);
+  padding:16px 18px;display:flex;flex-direction:column;gap:2px;box-shadow:var(--shadow)}
+.tile .n{font-family:"Shippori Mincho",serif;font-size:29px;font-weight:700;
+  font-variant-numeric:tabular-nums;line-height:1.15;color:var(--c)}
+.tile .k{font-size:11.5px;color:var(--ink2)}
+
+/* ---- 今日 ---- */
+.todaybar{background:color-mix(in srgb,var(--c1) 13%,var(--surface));
+  border:2px solid var(--c1);border-radius:var(--radius);padding:20px 24px;
+  display:flex;flex-direction:column;gap:6px}
+.todaybar .d{font-family:"Shippori Mincho",serif;font-size:30px;font-weight:700;color:var(--c1);line-height:1.2}
+.todaybar .w{font-size:13px;color:var(--ink2)}
+.todaybar .msg{font-family:"Shippori Mincho",serif;font-size:17px;font-weight:700;margin-top:4px}
+.todo{list-style:none;counter-reset:t;display:flex;flex-direction:column;gap:9px;margin-top:8px}
+.todo li{counter-increment:t;position:relative;background:var(--surface);border-radius:14px;
+  padding:12px 16px 12px 52px;border:1px solid var(--line)}
+.todo li::before{content:counter(t);position:absolute;left:14px;top:12px;width:26px;height:26px;
+  border-radius:50%;background:var(--c1);color:var(--on-accent);font-size:13px;font-weight:700;
+  display:grid;place-items:center}
+.todo .t{font-weight:700;display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.todo .t a{text-decoration:underline;text-underline-offset:3px}
+.todo .due{font-size:11px;font-weight:700;color:var(--on-accent);background:var(--c5);
+  border-radius:999px;padding:2px 10px}
+.todo .who{font-size:11.5px;color:var(--ink2);font-weight:500}
+.todo .dd{display:block;font-size:12.5px;color:var(--ink2);margin-top:2px}
+
+.tabs{display:flex;gap:7px;flex-wrap:wrap}
+.tabs button{padding:10px 20px;font-size:14px;color:var(--ink2);border-radius:999px;
+  border:1px solid var(--line);background:var(--surface);transition:all .15s}
+.tabs button.on{color:var(--on-accent);background:var(--c1);border-color:var(--c1);font-weight:700}
+.tabs button:hover:not(.on){color:var(--ink);border-color:var(--c1)}
+
+/* ---- 日ごとのカード ---- */
+section{display:flex;flex-direction:column;gap:18px}
+.stack{display:flex;flex-direction:column;gap:18px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  padding:18px;display:grid;grid-template-columns:196px 1fr;gap:20px;
+  box-shadow:var(--shadow);align-items:start;transition:box-shadow .18s,border-color .18s}
+.card:hover{box-shadow:var(--shadow-lift)}
+.card.noimg{grid-template-columns:1fr}
+.card.done{border-color:var(--c2);opacity:.78}
+.card.flash{outline:3px solid var(--c1);outline-offset:3px}
+@keyframes pulse{
+  0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--c) 60%,transparent)}
+  70%{box-shadow:0 0 0 14px color-mix(in srgb,var(--c) 0%,transparent)}
+  100%{box-shadow:0 0 0 0 color-mix(in srgb,var(--c) 0%,transparent)}}
+.card.now{border-color:var(--c);border-width:2px;animation:pulse 2.4s ease-in-out infinite}
+.thumb{width:100%;aspect-ratio:1;border-radius:14px;overflow:hidden;background:var(--surface2);
+  border:none;display:block;padding:0;box-shadow:var(--shadow);transition:transform .18s}
+.thumb:hover{transform:scale(1.03) rotate(-.6deg)}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.col{display:flex;flex-direction:column;gap:13px;min-width:0}
+.cardtop{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.name{font-family:"Shippori Mincho",serif;font-size:19px;font-weight:700}
+.when{font-family:"Roboto Mono",monospace;font-size:11.5px;color:var(--ink2);margin-left:auto}
+.datechip{display:inline-flex;align-items:baseline;gap:7px;font-family:"Shippori Mincho",serif;
+  font-size:22px;font-weight:700;letter-spacing:.02em;line-height:1.2}
+.datechip small{font-family:"Zen Kaku Gothic New",sans-serif;font-size:12px;font-weight:500;color:var(--ink2)}
+.datechip.today,.datechip.today small{color:var(--c5)}
+.todaytag{font-size:11px;font-weight:700;color:var(--on-accent);background:var(--c5);
+  border-radius:999px;padding:3px 11px;letter-spacing:.04em}
+.chip{display:inline-flex;align-items:center;font-size:11.5px;font-weight:700;
+  border-radius:999px;padding:3px 12px;border:1px solid currentColor;white-space:nowrap}
+.chip.c-none{color:var(--ink2);font-weight:500}
+.chip.c-hold{color:var(--hold)}
+.chip.c-posted{color:var(--on-accent);background:var(--c2);border-color:var(--c2)}
+.chip.c-media{color:var(--on-accent);background:var(--c);border-color:var(--c)}
+.chip.c-dead{color:var(--on-accent);background:var(--c5);border-color:var(--c5)}
+.body{white-space:pre-wrap;font-size:15px;line-height:1.95;background:var(--surface2);
+  border-radius:14px;padding:16px 18px;overflow-wrap:anywhere;font-family:inherit;
+  -webkit-user-select:text;user-select:text}
+.body.long{max-height:320px;overflow:auto}
+.meter{display:flex;flex-direction:column;gap:6px}
+.meter .row{display:flex;justify-content:space-between;gap:10px;font-family:"Roboto Mono",monospace;
+  font-size:11.5px;color:var(--ink2);font-variant-numeric:tabular-nums}
+.track{height:4px;background:var(--line);border-radius:999px;overflow:hidden}
+.fill{height:100%;background:var(--c);border-radius:999px}
+.fill.over{background:var(--over)}
+.meter.over .row{color:var(--over)}
+.flag{background:var(--flag-soft);border-radius:14px;padding:12px 16px;font-size:12.5px;
+  color:var(--flag);display:flex;flex-direction:column;gap:5px}
+.flag b{font-weight:700}
+.flag.ok{background:color-mix(in srgb,var(--c2) 12%,var(--surface));color:var(--ok)}
+.flag.ng{background:color-mix(in srgb,var(--c5) 12%,var(--surface));color:var(--over)}
+.actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.btn{border:1px solid var(--line);border-radius:999px;padding:8px 16px;font-size:13px;
+  background:var(--surface);text-decoration:none;display:inline-flex;align-items:center;gap:6px;
+  transition:border-color .15s,transform .15s}
+.btn:hover{border-color:var(--c1);transform:translateY(-1px)}
+.btn.primary{background:var(--c1);border-color:var(--c1);color:var(--on-accent);font-weight:700}
+.btn:active{transform:translateY(1px)}
+.warnline{font-size:12.5px;color:var(--c5);font-weight:700;line-height:1.7;
+  background:color-mix(in srgb,var(--c5) 11%,var(--surface));border-radius:12px;padding:9px 14px}
+.film{display:flex;flex-direction:column;gap:8px}
+.filmhead{font-size:12px;color:var(--ink2)}
+.filmhead b{font-family:"Shippori Mincho",serif;font-size:15px;color:var(--c);font-weight:700;margin-right:8px}
+.filmrow{display:flex;gap:10px;overflow-x:auto;padding-bottom:4px}
+.frame{display:flex;flex-direction:column;gap:5px;flex:none;text-decoration:none}
+.frame img{width:96px;height:96px;object-fit:cover;border-radius:12px;display:block;
+  background:var(--surface2);box-shadow:var(--shadow)}
+.frame span{font-family:"Roboto Mono",monospace;font-size:10.5px;color:var(--ink2);max-width:96px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+details.alt{font-size:12.5px}
+details.alt summary{cursor:pointer;color:var(--ink2)}
+details.alt pre{white-space:pre-wrap;overflow-wrap:anywhere;font:inherit;font-size:12.5px;
+  background:var(--surface2);border-radius:12px;padding:12px 14px;margin-top:8px}
+.posted{font-size:12.5px;color:var(--ok);font-weight:700}
+.posted a{font-weight:500;color:var(--ink);overflow-wrap:anywhere}
+
+/* ---- 投稿の記録（URLを貼って保存する）---- */
+.postbox{border:2px dashed var(--c);border-radius:16px;padding:15px 18px;
+  background:color-mix(in srgb,var(--c) 7%,var(--surface));display:flex;flex-direction:column;gap:11px}
+.postbox .pbhead{font-size:13px;font-weight:700;color:var(--c)}
+.postbox .pbrow{display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+.postbox input{flex:1;min-width:210px;background:var(--surface);border:1px solid var(--line);
+  border-radius:999px;padding:9px 16px;font-size:13px;color:var(--ink);font-family:inherit}
+.postbox input.who{flex:0 1 190px;min-width:150px}
+.postbox .msg{font-size:12.5px;color:var(--over);font-weight:700;min-height:1px}
+.postbox .msg.ok{color:var(--ok)}
+.saved{border-radius:14px;padding:12px 16px;background:color-mix(in srgb,var(--c2) 11%,var(--surface));
+  font-size:12.5px;display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center}
+.saved b{color:var(--ok)}
+.saved a{overflow-wrap:anywhere}
+.saved .who{color:var(--ink2);flex-basis:100%}
+
+/* ---- 下の固定バー・報告 ---- */
+#dock{position:fixed;left:0;right:0;bottom:0;z-index:40;display:none;background:var(--surface);
+  border-top:1px solid var(--line);box-shadow:0 -6px 24px rgba(60,40,15,.14);
+  padding:12px 18px calc(12px + env(safe-area-inset-bottom))}
+#dock.on{display:block}
+#dock .inner{max-width:1080px;margin:0 auto;display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-size:13px}
+#dock b{color:var(--c1);font-weight:700}
+#dock .grow{flex:1}
+#reportpane{background:var(--surface);border:2px solid var(--c1);border-radius:var(--radius);
+  padding:18px 20px;display:none;flex-direction:column;gap:11px}
+#reportpane.on{display:flex}
+#reportpane h3{font-family:"Shippori Mincho",serif;font-size:17px;font-weight:700}
+#reportpane p{font-size:12.5px;color:var(--ink2);line-height:1.8}
+#reportpane textarea{width:100%;min-height:200px;background:var(--surface2);color:var(--ink);
+  border:1px solid var(--line);border-radius:14px;padding:14px 16px;font-family:inherit;font-size:13px;line-height:1.8}
+.howto{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  padding:18px 22px;box-shadow:var(--shadow);font-size:13.5px}
+.howto ol{padding-left:1.3em;display:flex;flex-direction:column;gap:4px;margin-top:8px}
+.howto .warnline{margin-top:12px}
+footer{border-top:1px solid var(--line);padding-top:24px;color:var(--ink2);font-size:12.5px;
+  display:flex;flex-direction:column;gap:8px}
+footer b{color:var(--ink);font-weight:700}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:50;
+  background:var(--ink);color:var(--surface);padding:10px 22px;border-radius:999px;
+  font-size:13px;opacity:0;pointer-events:none;transition:opacity .18s}
 .toast.on{opacity:1}
+dialog{border:none;padding:0;background:transparent;max-width:min(92vw,900px);margin:auto}
+dialog::backdrop{background:rgba(30,20,8,.78)}
+dialog img{width:100%;height:auto;border-radius:18px;display:block}
+.empty{background:var(--surface);border:2px dashed var(--line);border-radius:var(--radius);
+  padding:40px;text-align:center;color:var(--ink2);font-size:13.5px}
+
+@media (max-width:660px){
+  #root{padding:18px 14px 80px;gap:26px}
+  .band{padding:56px 20px 22px;min-height:0}
+  .band .brand{left:20px}
+  .card{grid-template-columns:1fr}
+  .thumb{max-width:240px}
+  .when{margin-left:0;width:100%}
+  .todaybar{padding:16px 18px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none !important;animation:none !important}}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <header>
-    <h1>芸能労災 投稿デスク</h1>
-    <p class="meta" id="meta"></p>
-    <p class="links">
-      <a href="https://x.com/entame_rosai" target="_blank" rel="noopener">X @entame_rosai</a>
-      <a href="https://www.instagram.com/entame_rosai/" target="_blank" rel="noopener">Instagram @entame_rosai</a>
-      <a href="https://x.com/yabemasaru23" target="_blank" rel="noopener">X @yabemasaru23</a>
-    </p>
+<div id="root">
+  <header class="hero">
+    <div class="band" id="band">
+      <div class="brand"><b>芸能労災</b><span>@entame_rosai</span></div>
+      <div class="eyebrow">POST DESK</div>
+      <h1>芸能労災 投稿デスク</h1>
+      <div class="sub">フリーランス表現者の労災特別加入を、届く言葉で広める</div>
+      <div class="org">一般社団法人 JAPAN ACTION GUILD ／ 東京労働局長の承認を受けた労災保険特別加入団体</div>
+    </div>
+    <p class="lede">これから出す投稿を、ここからコピーして出します。出したあとはURLを保存して、次に活かします。
+      この画面が自動で投稿することはありません。投稿ボタンを押すのは人です。</p>
+    <div class="accounts">
+      <a class="acct" href="https://x.com/entame_rosai" target="_blank" rel="noopener"><i class="dot"></i><b>X</b><span class="handle">@entame_rosai</span></a>
+      <a class="acct" href="https://www.instagram.com/entame_rosai/" target="_blank" rel="noopener"><i class="dot"></i><b>Instagram</b><span class="handle">@entame_rosai</span></a>
+      <a class="acct" href="https://x.com/yabemasaru23" target="_blank" rel="noopener"><i class="dot" style="background:var(--c4)"></i><b>X 個人</b><span class="handle">@yabemasaru23</span></a>
+    </div>
+    <div class="savebar"><i class="dot"></i><span id="share-note"></span></div>
   </header>
 
-  <section class="todo" id="todo">
-    <h2>今日やること</h2>
-    <ol id="todo-list"></ol>
-  </section>
+  <div class="progress" id="progress"></div>
+  <div class="tiles" id="tiles"></div>
 
-  <section class="howto">
-    <h2>つかいかた</h2>
-    <ol>
-      <li>その日のカードの<b>「コピーして X を開く」</b>（Instagram のカードは Instagram）を押す。
-        投稿画面が新しいタブで開き、本文はコピーずみです。</li>
-      <li>投稿画面に<b>そのまま貼る</b>。書き足さない・削らない。
-        <b>アカウントが合っているか、左下の表示とアイコンで必ず確認する。</b></li>
-      <li>画像があるカードは、画像を保存して添付する。
-        <b>代替テキスト（ALT）は、画像を添付した直後・本文を打つ前に入れる。</b>
-        本文を先に打つと飛びます。X は投稿後に追加できません。</li>
-      <li>投稿したら、そのカードの欄に<b>投稿のURLと自分の名前を入れて「保存」</b>を押す。</li>
-    </ol>
-    <p id="share-note"></p>
-    <p class="warn">
-      1日2投稿まで。数分以内の連続投稿はしない（スパム判定を受けます）。<br>
-      迷ったら投稿しないで確認してください。<b>取り消しには削除しか手段がなく、表示回数が0に戻ります。</b>
-    </p>
-  </section>
+  <div class="todaybar" id="todaybar">
+    <div class="d" id="today-d"></div>
+    <div class="w" id="today-w"></div>
+    <div class="msg">今日やること</div>
+    <ol class="todo" id="todo-list"></ol>
+  </div>
 
-  <div class="bar">
-    <button id="f-todo" aria-pressed="false">未投稿だけ表示</button>
+  <div class="tabs" id="tabs">
+    <button data-f="todo" class="on">まだ出していないもの</button>
+    <button data-f="all">すべて</button>
     <button id="f-theme">表示切替</button>
   </div>
 
-  <main id="list"></main>
+  <main id="list" class="stack"></main>
 
-  <section id="report-pane" style="display:none">
-    <h2>矢部さんに送る文面</h2>
+  <section id="reportpane">
+    <h3>矢部さんに送る文面</h3>
     <p>コピーしてあります。<b>LINE かメールで矢部さんに送ってください。</b>
-      コピーできていなければ、下の文をそのまま選んで送ってください。</p>
+      コピーできていなければ、下の文をそのまま選んで送ってください。送ったら、画面下の「報告しました」を押してください。</p>
     <textarea readonly rows="10"></textarea>
-    <p class="sub">送ったら、画面下の「報告しました」を押してください。</p>
+  </section>
+
+  <section class="howto">
+    <h2 class="tone1">つかいかた</h2>
+    <ol>
+      <li>カードの<b>「コピーして X を開く」</b>（Instagram は Instagram）を押す。投稿画面が新しいタブで開き、本文はコピーずみです。</li>
+      <li>投稿画面に<b>そのまま貼る</b>。書き足さない・削らない。<b>アカウントが合っているか、左下の表示とアイコンで必ず確認する。</b></li>
+      <li>画像があるカードは、画像を保存して添付する。<b>代替テキスト（ALT）は、画像を添付した直後・本文を打つ前に入れる。</b>X は投稿後に足せません。</li>
+      <li>投稿したら、そのカードの欄に<b>投稿のURLと自分の名前を入れて「保存」</b>を押す。</li>
+    </ol>
+    <div class="warnline">1日2投稿まで。数分以内の連続投稿はしない（スパム判定を受けます）。
+      迷ったら投稿しないで確認してください。取り消しには削除しか手段がなく、表示回数が0に戻ります。</div>
   </section>
 
   <footer>
-    <p>このページは下書きの受け渡し用です。ここから投稿はできません。公開ボタンは人が押します。</p>
-    <p>内容は <code>output/YYYY-MM-DD/</code> の成果物から自動で組み立てています。直すときは元のファイルを直してください。</p>
-    <p id="share-foot"></p>
+    <div><b>この画面について</b>　下書きの受け渡し用です。ここから投稿はできません。公開ボタンは人が押します。</div>
+    <div><b>中身の出どころ</b>　<code>output/YYYY-MM-DD/</code> の成果物から自動で組み立てています。直すときは元のファイルを直してください。</div>
+    <div><b>記録</b>　<span id="share-foot"></span></div>
+    <div id="meta"></div>
   </footer>
 </div>
 
-<div class="dock" id="dock">
-  <span id="dock-msg"></span>
-  <button id="dock-report">まとめて報告</button>
-  <button class="sub" id="dock-done">報告しました</button>
-</div>
+<div id="dock"><div class="inner">
+  <span id="dock-msg"></span><span class="grow"></span>
+  <button class="btn primary" id="dock-report">まとめて報告</button>
+  <button class="btn" id="dock-done">報告しました</button>
+</div></div>
 <div class="toast" id="toast">コピーしました</div>
+<dialog id="zoom"><img alt=""></dialog>
 
 <script id="desk-data" type="application/json">__DATA__</script>
 <script>
@@ -268,20 +353,20 @@ footer{margin-top:40px; padding-top:16px; border-top:1px solid var(--line);
   var DATA = JSON.parse(document.getElementById('desk-data').textContent);
   var list = document.getElementById('list');
   var toastEl = document.getElementById('toast'), toastTimer = null;
+  var WEEK = ['日','月','火','水','木','金','土'];
+  // 媒体ごとの色（びわから基金と同じ5色の体系から割り当てる）
+  var TONE = {x:'tone3', yabe:'tone4', ig:'tone5'};
+  function tone(key){ return TONE[key] || (key.indexOf('reply') === 0 ? 'tone2' : 'tone1'); }
 
+  if (DATA.hero) document.getElementById('band').style.backgroundImage = 'url(' + DATA.hero + ')';
   document.getElementById('meta').textContent =
     DATA.account + '／直近' + DATA.days.length + '日分　最終更新 ' + DATA.builtAt;
-
   document.getElementById('share-note').innerHTML = DATA.endpoint
-    ? '保存すると、<b>その場で矢部さんの記録表に入ります。</b>'
-      + 'このページを開いている全員の画面にも出ます。報告を別に送る必要はありません。'
-    : '<b>いまは保存してもこの端末にしか残りません。</b>'
-      + '最後に画面下の「まとめて報告」を押して、出てきた文面を矢部さんに送ってください。';
+    ? 'URLを保存すると、その場で矢部さんの記録表に入ります。報告を別に送る必要はありません。'
+    : 'いまは保存してもこの端末にしか残りません。最後に画面下の「まとめて報告」を押してください。';
   document.getElementById('share-foot').innerHTML = DATA.endpoint
-    ? '保存した投稿URLは矢部さんの記録表に送られます。'
-      + '送れなかったときだけ、画面下に「共有できていない記録」のバーが出ます。'
-    : '<b>保存した投稿URLは、この端末のブラウザの中だけに残ります。</b>'
-      + '他の人の画面には出ません。';
+    ? '保存した投稿URLは矢部さんの記録表に送られます。送れなかったときだけ、画面下に「共有できていない記録」のバーが出ます。'
+    : '保存した投稿URLは、この端末のブラウザの中だけに残ります。';
 
   function toast(msg){
     toastEl.textContent = msg; toastEl.classList.add('on');
@@ -300,21 +385,17 @@ footer{margin-top:40px; padding-top:16px; border-top:1px solid var(--line);
       document.body.removeChild(ta);
     }
     if (navigator.clipboard && window.isSecureContext) {
-      navigator.clipboard.writeText(text).then(
-        function(){ toast(label + 'をコピーしました'); }, fallback);
+      navigator.clipboard.writeText(text).then(function(){ toast(label + 'をコピーしました'); }, fallback);
     } else { fallback(); }
   }
 
   // ── この端末に残す投稿記録 ─────────────────────────────
-  // 静的サイトなので、保存先はこの人のブラウザしかない。
-  // 他の人には見えないので、最後に「まとめて報告」で送ってもらう。
   var KEY = 'entame-rosai-desk-v1';
   var store = { who: '', log: {} };
   try {
     var raw = localStorage.getItem(KEY);
     if (raw) { var p = JSON.parse(raw); if (p && p.log) store = p; }
   } catch(e) { /* プライベートモード等。記録なしで動かす */ }
-
   function persist(){
     try { localStorage.setItem(KEY, JSON.stringify(store)); return true; }
     catch(e){ return false; }
@@ -322,11 +403,8 @@ footer{margin-top:40px; padding-top:16px; border-top:1px solid var(--line);
   function recKey(date, key){ return date + '/' + key; }
 
   // ── みんなに共有される記録（スプレッドシート） ──────────────
-  // endpoint が空のときは、この仕組みは丸ごと働かない。
-  // そのぶん下の「まとめて報告」が自動的に出るので、運用は止まらない。
-  var shared = {};                    // date/key -> {url, who, at}
-  var redraw = [];                    // カードごとの描き直し
-
+  var shared = {};
+  var redraw = [];
   function jsonp(url, done){
     var name = '__desk' + Math.random().toString(36).slice(2);
     var s = document.createElement('script');
@@ -341,10 +419,7 @@ footer{margin-top:40px; padding-top:16px; border-top:1px solid var(--line);
     s.src = url + (url.indexOf('?') < 0 ? '?' : '&') + 'callback=' + name;
     document.head.appendChild(s);
   }
-
-  // 投稿日を 2026-09-19 の形にそろえる。
-  // スプレッドシートが日付型に変換すると 'Thu Sep 19 2026 ...' で返ってくることがあり、
-  // そのままではカードと突き合わない。受け口側でも直したが、古い版でも動くようここでも吸収する。
+  // スプレッドシートが日付型に変換すると 'Thu Sep 19 2026 ...' で返ってくることがあるので吸収する
   function ymd(s){
     s = String(s || '');
     if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
@@ -353,31 +428,22 @@ footer{margin-top:40px; padding-top:16px; border-top:1px solid var(--line);
     var p = function(n){ return ('0' + n).slice(-2); };
     return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
   }
-
   function pull(done){
     if (!DATA.endpoint) { if (done) done(); return; }
     jsonp(DATA.endpoint, function(res){
       if (res && res.ok && res.rows) {
         shared = {};
-        res.rows.forEach(function(r){
-          r.date = ymd(r.date);
-          shared[recKey(r.date, r.key)] = r;
-        });
+        res.rows.forEach(function(r){ r.date = ymd(r.date); shared[recKey(r.date, r.key)] = r; });
         redraw.forEach(function(f){ f(); });
       }
       dock();
       if (done) done();
     });
   }
-
   function push(rec, done){
     if (!DATA.endpoint) { done(false); return; }
-    var id = recKey(rec.date, rec.key);
-    var tries = 0;
-    // Apps Script は CORS を返さないので no-cors で送る＝返事が読めない。
-    // そこで、記録表に載ったかどうかを読み直して確かめる。
-    // 1回だけだと間に合わないことがある（実測：1.5秒では載っていなかった）ので、
-    // 載るまで何度か見に行く。
+    var id = recKey(rec.date, rec.key), tries = 0;
+    // Apps Script は CORS を返さないので no-cors で送り、載ったかを読み直して確かめる
     function check(){
       tries++;
       pull(function(){
@@ -386,152 +452,158 @@ footer{margin-top:40px; padding-top:16px; border-top:1px solid var(--line);
         setTimeout(check, 2500);
       });
     }
-    fetch(DATA.endpoint, {
-      method: 'POST', mode: 'no-cors',
-      headers: {'Content-Type': 'text/plain;charset=utf-8'},
-      body: JSON.stringify(rec)
-    }).then(function(){ setTimeout(check, 1500); },
-      function(){ done(false); });
+    fetch(DATA.endpoint, {method:'POST', mode:'no-cors',
+      headers:{'Content-Type':'text/plain;charset=utf-8'}, body: JSON.stringify(rec)})
+      .then(function(){ setTimeout(check, 1500); }, function(){ done(false); });
   }
-
   function now(){
     var d = new Date(), p = function(n){ return ('0' + n).slice(-2); };
-    return d.getFullYear() + '-' + p(d.getMonth()+1) + '-' + p(d.getDate())
-      + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+    return d.getFullYear() + '-' + p(d.getMonth()+1) + '-' + p(d.getDate()) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
   }
-
   function validUrl(url, key){
     if (!/^https:\/\//.test(url)) return 'https:// から始まるURLを貼ってください';
     var host;
-    try { host = new URL(url).hostname.replace(/^www\./, ''); }
-    catch(e){ return 'URLの形になっていません'; }
-    var x = (host === 'x.com' || host === 'twitter.com');
-    var ig = (host === 'instagram.com');
+    try { host = new URL(url).hostname.replace(/^www\./, ''); } catch(e){ return 'URLの形になっていません'; }
+    var x = (host === 'x.com' || host === 'twitter.com'), ig = (host === 'instagram.com');
     if (key === 'ig' && !ig) return 'Instagram の投稿URLを貼ってください';
     if (key !== 'ig' && !x) return 'X の投稿URLを貼ってください';
     if (x && !/\/status\/\d+/.test(url)) return '投稿そのもののURL（/status/…）を貼ってください';
     return '';
   }
-
   function el(tag, cls, text){
     var n = document.createElement(tag);
     if (cls) n.className = cls;
     if (text != null) n.textContent = text;
     return n;
   }
-
   function isDone(item){ return /投稿済|送信済/.test(item.status); }
+  function md(date){
+    var d = new Date(date + 'T00:00:00');
+    return {m: d.getMonth() + 1, d: d.getDate(), w: WEEK[d.getDay()]};
+  }
+
+  var zoom = document.getElementById('zoom');
+  zoom.addEventListener('click', function(){ zoom.close(); });
+  function openZoom(src){ zoom.querySelector('img').src = src; zoom.showModal(); }
 
   function card(item){
-    var c = el('div', 'card' + (isDone(item) ? ' done' : ''));
+    var imgs = item.images || [];
+    var c = el('article', 'card ' + tone(item.key) + (imgs.length ? '' : ' noimg') + (isDone(item) ? ' done' : ''));
     c.dataset.done = isDone(item) ? '1' : '0';
     c.id = 'c-' + item.date + '-' + item.key;
+    if (item.date === DATA.today && !isDone(item)) c.classList.add('now');
 
-    var head = el('div', 'head');
-    head.appendChild(el('span', 'chip media', item.label));
-    head.appendChild(el('span', 'chip ' + (isDone(item) ? 'done' : 'todo'),
-      isDone(item) ? (item.replyTo ? '送信済' : '投稿済') : (item.replyTo ? '未送信' : '未投稿')));
+    if (imgs.length) {
+      var th = el('button', 'thumb');
+      th.title = '押すと大きく表示します';
+      var ti = document.createElement('img');
+      ti.src = imgs[0].path; ti.alt = ''; ti.loading = 'lazy';
+      th.appendChild(ti);
+      th.addEventListener('click', function(){ openZoom(imgs[0].path); });
+      c.appendChild(th);
+    }
+    var col = el('div', 'col');
+    c.appendChild(col);
+
+    var top = el('div', 'cardtop');
+    var dd = md(item.date);
+    var dc = el('span', 'datechip' + (item.date === DATA.today ? ' today' : ''));
+    dc.appendChild(document.createTextNode(dd.m + '月' + dd.d + '日'));
+    dc.appendChild(el('small', null, dd.w));
+    top.appendChild(dc);
+    if (item.date === DATA.today) top.appendChild(el('span', 'todaytag', '今日'));
+    top.appendChild(el('span', 'chip c-media', item.label));
+    top.appendChild(el('span', 'chip ' + (isDone(item) ? 'c-posted' : 'c-hold'),
+      isDone(item) ? (item.replyTo ? '送信済み' : '投稿済み') : (item.replyTo ? '未送信' : '未投稿')));
     if (item.deadline && !isDone(item)) {
       var dl = item.deadline.split('-');
-      head.appendChild(el('span', 'chip deadline',
-        '送る期限 ' + (+dl[1]) + '/' + (+dl[2]) + ' まで'));
+      top.appendChild(el('span', 'chip c-dead', '送る期限 ' + (+dl[1]) + '/' + (+dl[2])));
     }
-    if (item.images.length) head.appendChild(el('span', 'chip', '画像' + item.images.length + '枚'));
-    c.appendChild(head);
+    if (imgs.length) top.appendChild(el('span', 'chip c-none', '画像' + imgs.length + '枚'));
+    top.appendChild(el('span', 'when', item.account));
+    col.appendChild(top);
 
-    var pre = el('pre', 'body', item.text);
-    c.appendChild(pre);
+    // 長いキャプションは枠の中でスクロールさせる（カードが縦に伸びすぎて次の投稿が見えなくなるため）
+    col.appendChild(el('div', 'body' + (item.chars > 300 ? ' long' : ''), item.text));
+
+    var over = item.limit && item.chars > item.limit;
+    var mt = el('div', 'meter' + (over ? ' over' : ''));
+    var row = el('div', 'row');
+    row.appendChild(el('span', null, item.chars + ' 字 ／ ' + item.lines + ' 行 ／ ハッシュタグ ' + item.hashtags));
+    row.appendChild(el('span', null, item.limit ? '上限 ' + item.limit + ' 字' : ''));
+    mt.appendChild(row);
+    if (item.limit) {
+      var tr = el('div', 'track'), fl = el('div', 'fill' + (over ? ' over' : ''));
+      fl.style.width = Math.min(100, item.chars / item.limit * 100) + '%';
+      tr.appendChild(fl); mt.appendChild(tr);
+    }
+    col.appendChild(mt);
+
+    var errs = item.check.errors, warns = item.check.warns;
+    var fg = el('div', 'flag' + (errs.length ? ' ng' : (warns.length ? '' : ' ok')));
+    if (!errs.length && !warns.length) {
+      fg.appendChild(el('b', null, '機械チェック：問題なし'));
+    } else {
+      fg.appendChild(el('b', null, errs.length ? '機械チェック：そのまま投稿しないでください' : '機械チェック：確認してください'));
+      errs.forEach(function(t){ fg.appendChild(el('span', null, '・要修正　' + t)); });
+      warns.forEach(function(t){ fg.appendChild(el('span', null, '・要確認　' + t)); });
+    }
+    col.appendChild(fg);
 
     var actions = el('div', 'actions');
-    var b = el('button', 'copy', '本文をコピー');
-    b.addEventListener('click', function(){ copy(item.text, '本文'); });
-    actions.appendChild(b);
-
-    // 投稿画面をそのまま開く。コピーと同時にやるので、貼るところから始められる。
-    // ※ 本文を URL に載せて開く形（intent）は使わない。あの画面では画像を添付できず、
-    //   画像とALTが必須のこの運用では、かえって手戻りになる。
-    // 返信の案は、返信先の投稿そのものを開く。作業者に相手を探させない。
-    var open = el('button', 'copy open',
-      item.replyTo ? 'コピーして 返信先の投稿を開く'
-                   : (item.key === 'ig' ? 'コピーして Instagram を開く'
-                                        : 'コピーして X を開く'));
+    // 投稿画面をそのまま開く。本文を URL に載せる形（intent）は画像を添付できないので使わない。
+    // 返信の案は、返信先の投稿そのものを開く。
+    var open = el('button', 'btn primary',
+      item.replyTo ? 'コピーして 返信先の投稿を開く' : (item.key === 'ig' ? 'コピーして Instagram を開く' : 'コピーして X を開く'));
     open.addEventListener('click', function(){
       copy(item.text, '本文');
       window.open(item.replyTo ? item.replyTo
-                               : (item.key === 'ig' ? 'https://www.instagram.com/'
-                                                    : 'https://x.com/compose/post'),
-                  '_blank', 'noopener');
+        : (item.key === 'ig' ? 'https://www.instagram.com/' : 'https://x.com/compose/post'), '_blank', 'noopener');
     });
     actions.appendChild(open);
-
+    var b = el('button', 'btn', '本文をコピー');
+    b.addEventListener('click', function(){ copy(item.text, '本文'); });
+    actions.appendChild(b);
     if (item.alt) {
-      var b2 = el('button', 'copy sub', '代替テキストをコピー');
+      var b2 = el('button', 'btn', '代替テキストをコピー');
       b2.addEventListener('click', function(){ copy(item.alt, '代替テキスト'); });
       actions.appendChild(b2);
     }
-    c.appendChild(actions);
+    col.appendChild(actions);
 
-    // どのアカウントから出すのかを、投稿画面を開く場所のすぐ下に置く。
-    // ログイン中のアカウントは日によって変わっており、取り違えると削除しか直す手段がない。
-    var acc = el('p', 'account');
-    acc.innerHTML = '投稿するアカウント：<b>' + item.account + '</b>　'
-      + '（投稿画面の左下と、アイコンを必ず見てください）';
-    c.appendChild(acc);
+    // ログイン中のアカウントは日によって変わる。取り違えると削除しか直す手段がない
+    col.appendChild(el('div', 'warnline', '投稿するアカウント：' + item.account + '　投稿画面の左下とアイコンを必ず見てください'));
 
-    var stats = el('p', 'stats');
-    var over = item.limit && item.chars > item.limit;
-    stats.innerHTML = '本文 <b class="' + (over ? 'over' : '') + '">' + item.chars + '字</b>'
-      + (item.limit ? '（上限' + item.limit + '字）' : '')
-      + '　/　' + item.lines + '行'
-      + '　/　ハッシュタグ ' + item.hashtags + '個';
-    c.appendChild(stats);
-
-    var chk = el('div', 'check');
-    var errs = item.check.errors, warns = item.check.warns;
-    if (!errs.length && !warns.length) {
-      chk.appendChild(el('span', 'ok', '機械チェック：問題なし'));
-    } else {
-      var ul = el('ul');
-      errs.forEach(function(t){ ul.appendChild(el('li', 'e', '要修正　' + t)); });
-      warns.forEach(function(t){ ul.appendChild(el('li', 'w', '要確認　' + t)); });
-      chk.appendChild(el('span', errs.length ? '' : 'ok',
-        errs.length ? '機械チェック：そのまま投稿しないでください' : '機械チェック：確認してください'));
-      chk.appendChild(ul);
-    }
-    c.appendChild(chk);
-
-    if (item.images.length) {
-      var box = el('div', 'imgs');
-      box.appendChild(el('h3', null, '画像（押すと原寸で開きます。長押し／右クリックで保存）'));
-      var th = el('div', 'thumbs');
-      item.images.forEach(function(im){
-        var a = el('a'); a.href = im.path; a.target = '_blank'; a.rel = 'noopener';
-        var img = document.createElement('img');
-        img.src = im.path; img.alt = im.name; img.loading = 'lazy';
+    if (imgs.length) {
+      var film = el('div', 'film');
+      var fh = el('div', 'filmhead');
+      fh.appendChild(el('b', null, '画像 ' + imgs.length + '枚'));
+      fh.appendChild(document.createTextNode('押すと原寸で開きます。長押し／右クリックで保存'));
+      film.appendChild(fh);
+      var fr = el('div', 'filmrow');
+      imgs.forEach(function(im){
+        var a = el('a', 'frame'); a.href = im.path; a.target = '_blank'; a.rel = 'noopener';
+        var img = document.createElement('img'); img.src = im.path; img.alt = im.name; img.loading = 'lazy';
         a.appendChild(img); a.appendChild(el('span', null, im.name));
-        th.appendChild(a);
+        fr.appendChild(a);
       });
-      box.appendChild(th);
-      c.appendChild(box);
+      film.appendChild(fr);
+      col.appendChild(film);
     }
-
     if (item.alt) {
       var d = el('details', 'alt');
       d.appendChild(el('summary', null, '代替テキスト（ALT）を見る'));
       d.appendChild(el('pre', null, item.alt));
-      c.appendChild(d);
+      col.appendChild(d);
     }
-
     if (item.url) {
-      // 台帳に入っているものが正。ここは動かさない
-      var p = el('p', 'posted');
-      p.appendChild(document.createTextNode('投稿済み（記録ずみ）：'));
-      var a = el('a', null, item.url);
-      a.href = item.url; a.target = '_blank'; a.rel = 'noopener';
-      p.appendChild(a);
-      c.appendChild(p);
+      var pp = el('div', 'posted');
+      pp.appendChild(document.createTextNode('投稿済み（記録ずみ）　'));
+      var a2 = el('a', null, item.url); a2.href = item.url; a2.target = '_blank'; a2.rel = 'noopener';
+      pp.appendChild(a2);
+      col.appendChild(pp);
     } else {
-      c.appendChild(saveBox(item, c));
+      col.appendChild(saveBox(item, c));
     }
     return c;
   }
@@ -539,93 +611,68 @@ footer{margin-top:40px; padding-top:16px; border-top:1px solid var(--line);
   function saveBox(item, cardEl){
     var box = el('div');
     var id = recKey(item.date, item.key);
-
     function render(){
       box.innerHTML = '';
-      var srv = shared[id];               // みんなに見えている記録
-      var mine = store.log[id];           // この端末の控え
-      var rec = srv || mine;
-
+      var srv = shared[id], mine = store.log[id], rec = srv || mine;
       if (rec && !box.editing) {
         var done = el('div', 'saved');
         done.appendChild(el('b', null, '投稿しました'));
-        done.appendChild(document.createTextNode('　'));
-        var a = el('a', null, rec.url);
-        a.href = rec.url; a.target = '_blank'; a.rel = 'noopener';
+        var a = el('a', null, rec.url); a.href = rec.url; a.target = '_blank'; a.rel = 'noopener';
         done.appendChild(a);
-        done.appendChild(el('div', 'who',
-          (rec.who || '担当者未記入') + '　' + rec.at + '　'
-          + (srv ? '共有ずみ' : (DATA.endpoint ? '送信中／この端末だけ' : 'この端末だけ'))));
+        var btn0;
         if (srv) {
-          // URLを貼り間違えたときのやり直し。同じ日・同じ媒体なので記録表の行が書き換わる
-          var fix = el('button', null, '貼り直す');
-          fix.addEventListener('click', function(){
-            box.editing = true; render();
-          });
-          done.appendChild(fix);
+          btn0 = el('button', 'btn', '貼り直す');
+          btn0.addEventListener('click', function(){ box.editing = true; render(); });
         } else {
-          var undo = el('button', null, '取り消す');
-          undo.addEventListener('click', function(){
-            delete store.log[id]; persist(); render(); dock();
-          });
-          done.appendChild(undo);
+          btn0 = el('button', 'btn', '取り消す');
+          btn0.addEventListener('click', function(){ delete store.log[id]; persist(); render(); dock(); });
         }
+        done.appendChild(btn0);
+        done.appendChild(el('span', 'who', (rec.who || '担当者未記入') + '　' + rec.at + '　'
+          + (srv ? '共有ずみ' : (DATA.endpoint ? '送信中／この端末だけ' : 'この端末だけ'))));
         box.appendChild(done);
-        cardEl.classList.add('done');
+        cardEl.classList.add('done'); cardEl.classList.remove('now');
         cardEl.dataset.done = '1';
         return;
       }
       cardEl.classList.remove('done');
       cardEl.dataset.done = '0';
-
-      var wrap = el('div', 'save');
-      wrap.appendChild(el('h3', null, box.editing ? '正しいURLを貼り直す'
-                                                  : '投稿したら、URLを貼って保存'));
-      var row = el('div', 'row');
+      var wrap = el('div', 'postbox');
+      wrap.appendChild(el('div', 'pbhead', box.editing ? '正しいURLを貼り直す' : '投稿したら、URLを貼って保存してください'));
+      var row = el('div', 'pbrow');
       var url = document.createElement('input');
-      url.type = 'url'; url.placeholder = '投稿のURLを貼る';
+      url.type = 'url'; url.placeholder = item.key === 'ig' ? 'Instagram の投稿URLを貼る' : 'X の投稿URLを貼る';
       url.setAttribute('inputmode', 'url');
       if (box.editing && rec) url.value = rec.url;
       var who = document.createElement('input');
-      who.className = 'who'; who.type = 'text';
-      who.placeholder = '担当者名'; who.value = store.who || '';
-      var btn = el('button', null, '保存');
+      who.className = 'who'; who.type = 'text'; who.placeholder = '担当者名'; who.value = store.who || '';
+      var btn = el('button', 'btn primary', '保存');
       row.appendChild(url); row.appendChild(who); row.appendChild(btn);
       if (box.editing) {
-        var cancel = el('button', null, 'やめる');
-        cancel.style.background = 'transparent';
-        cancel.style.color = 'var(--sub)';
+        var cancel = el('button', 'btn', 'やめる');
         cancel.addEventListener('click', function(){ box.editing = false; render(); });
         row.appendChild(cancel);
       }
       wrap.appendChild(row);
-      var msg = el('p', 'msg');
+      var msg = el('div', 'msg');
       wrap.appendChild(msg);
-
       function save(){
         var v = url.value.trim();
         var err = validUrl(v, item.key);
         if (err) { msg.className = 'msg'; msg.textContent = err; return; }
         store.who = who.value.trim();
-        var rec2 = {
-          date: item.date, key: item.key, label: item.label,
-          url: v, who: store.who, at: now()
-        };
-        // まず端末に控える。共有に失敗しても記録が消えないようにするため
-        store.log[id] = rec2;
+        var rec2 = {date: item.date, key: item.key, label: item.label, url: v, who: store.who, at: now()};
+        store.log[id] = rec2;           // まず端末に控える。共有に失敗しても記録が消えないように
         box.editing = false;
-        // 記録表の古い行は、読み直すまで残っている。
-        // ここで消しておかないと、貼り直した直後に前のURLが表示される
-        delete shared[id];
+        delete shared[id];              // 貼り直した直後に前のURLが出ないように
         if (!persist() && !DATA.endpoint) {
-          msg.className = 'msg';
-          msg.textContent = 'この端末には保存できませんでした。URLを直接お送りください';
+          msg.className = 'msg'; msg.textContent = 'この端末には保存できませんでした。URLを直接お送りください';
           return;
         }
-        render(); dock(); toast('保存しました');
+        render(); dock(); progress(); toast('保存しました');
         btn.disabled = true;
         push(rec2, function(ok){
-          if (ok) return;                 // pull が描き直す
+          if (ok) return;
           if (DATA.endpoint) toast('共有できませんでした。下の「まとめて報告」で送ってください');
         });
       }
@@ -633,74 +680,117 @@ footer{margin-top:40px; padding-top:16px; border-top:1px solid var(--line);
       url.addEventListener('keydown', function(e){ if (e.key === 'Enter') save(); });
       box.appendChild(wrap);
     }
-
     redraw.push(render);
     render();
     return box;
   }
 
-  // ── 下の固定バー：未報告の件数と、まとめて報告 ───────────────
-  var dockEl = document.getElementById('dock');
-  var dockMsg = document.getElementById('dock-msg');
-
-  // 共有に載っていない＝矢部さんにまだ届いていないもの。
-  // 共有がうまく動いている日は0件になり、このバーは出てこない。
+  // ── 下の固定バー：共有できていない記録と、まとめて報告 ───────────
+  var dockEl = document.getElementById('dock'), dockMsg = document.getElementById('dock-msg');
   function pending(){
     return Object.keys(store.log)
       .filter(function(k){ return !shared[k] && !store.log[k].reported; })
       .map(function(k){ return store.log[k]; })
       .sort(function(a, b){ return a.date < b.date ? -1 : 1; });
   }
-
   function dock(){
     var n = pending().length;
     dockEl.classList.toggle('on', n > 0);
-    dockMsg.textContent = DATA.endpoint
-      ? '共有できていない記録 ' + n + '件'
-      : '未報告 ' + n + '件';
+    dockMsg.innerHTML = (DATA.endpoint ? '共有できていない記録 ' : '未報告 ') + '<b>' + n + '件</b>';
   }
-
   function reportText(){
     var lines = ['芸能労災 投稿デスク｜投稿しました'];
     pending().forEach(function(r){
-      lines.push('');
-      lines.push(r.date + '　' + r.label);
-      lines.push(r.url);
+      lines.push(''); lines.push(r.date + '　' + r.label); lines.push(r.url);
       lines.push('投稿者 ' + (r.who || '（未記入）') + '　' + r.at);
     });
     return lines.join('\n');
   }
-
   document.getElementById('dock-report').addEventListener('click', function(){
     var text = reportText();
     copy(text, '報告の文面');
-    // コピーが使えない端末でも渡せるよう、文面そのものを画面に出しておく。
-    // mailto は宛先を書けない（公開ページにメールアドレスを載せないため）ので使わない。
-    var pane = document.getElementById('report-pane');
+    var pane = document.getElementById('reportpane');
     pane.querySelector('textarea').value = text;
-    pane.style.display = 'block';
-    pane.scrollIntoView({behavior: 'smooth', block: 'center'});
+    pane.classList.add('on');
+    pane.scrollIntoView({behavior:'smooth', block:'center'});
   });
-
   document.getElementById('dock-done').addEventListener('click', function(){
     pending().forEach(function(r){ r.reported = true; });
     persist(); dock();
-    document.getElementById('report-pane').style.display = 'none';
-    Array.prototype.forEach.call(document.querySelectorAll('.saved .who'), function(n){
-      n.textContent = n.textContent.replace('未報告', '報告ずみ');
-    });
+    document.getElementById('reportpane').classList.remove('on');
     toast('報告ずみにしました');
   });
 
+  // ── 日ごとの並び ─────────────────────────────
   DATA.days.forEach(function(day){
-    var sec = el('section', 'day');
-    if (day.backlog) sec.dataset.backlog = '1';
+    var sec = el('section', 'day tone1');
+    if (day.backlog) { sec.dataset.backlog = '1'; sec.className = 'day tone5'; }
     sec.appendChild(el('h2', null, day.label));
-    day.items.forEach(function(item){ sec.appendChild(card(item)); });
+    var st = el('div', 'stack');
+    day.items.forEach(function(item){ st.appendChild(card(item)); });
+    sec.appendChild(st);
     list.appendChild(sec);
   });
+  if (!DATA.days.length) list.appendChild(el('div', 'empty', '載せる投稿がありません'));
 
-  // 今日やること。行を押すと該当カードへ移動して枠を光らせる
+  // ── 進み具合（びわから基金と同じ「点の帯」）と数字の札 ─────────────
+  function allCards(){ return Array.prototype.slice.call(document.querySelectorAll('.card')); }
+  function progress(){
+    var cs = allCards();
+    var done = cs.filter(function(c){ return c.dataset.done === '1'; }).length;
+    var box = document.getElementById('progress');
+    box.innerHTML = '';
+    var top = el('div', 'ptop');
+    top.appendChild(el('b', null, done + ' 本、世に出ました。'));
+    top.appendChild(el('span', 'cnt', '投稿済み ' + done + ' / ' + cs.length));
+    box.appendChild(top);
+    var bar = el('div', 'pbar');
+    cs.slice().reverse().forEach(function(c){
+      var s = el('button', 'pseg ' + (c.className.match(/tone\d/) || ['tone1'])[0] + (c.dataset.done === '1' ? ' posted' : ''));
+      s.title = c.querySelector('.datechip').textContent + '　' + c.querySelector('.c-media').textContent;
+      s.addEventListener('click', function(){ jump(c.id); });
+      bar.appendChild(s);
+    });
+    box.appendChild(bar);
+    var lg = el('div', 'plegend');
+    [['tone3','X @entame_rosai'],['tone5','Instagram'],['tone2','返信'],['tone4','X @yabemasaru23']].forEach(function(t){
+      var sp = el('span', t[0]); sp.appendChild(el('i', 'c')); sp.appendChild(document.createTextNode(t[1])); lg.appendChild(sp);
+    });
+    var sp0 = el('span'); sp0.appendChild(el('i')); sp0.appendChild(document.createTextNode('まだ')); lg.appendChild(sp0);
+    box.appendChild(lg);
+
+    var tiles = document.getElementById('tiles');
+    tiles.innerHTML = '';
+    function tile(n, k, t){
+      var d = el('div', 'tile ' + t); d.appendChild(el('div', 'n', n)); d.appendChild(el('div', 'k', k)); tiles.appendChild(d);
+    }
+    var todo = cs.length - done;
+    var replies = cs.filter(function(c){ return /-reply/.test(c.id) && c.dataset.done !== '1'; }).length;
+    tile(todo, 'まだ出していない', 'tone1');
+    tile(replies, '返信の案（未送信）', 'tone2');
+    var f = DATA.followers;
+    if (f) {
+      var sum = [f.x, f.ig, f.note].reduce(function(a, b){ return a + (b || 0); }, 0);
+      tile(sum, 'フォロワー合計（' + f.date.replace('-', '/') + '）', 'tone4');
+      tile(f.x == null ? '—' : f.x, 'X フォロワー', 'tone3');
+      tile(f.ig == null ? '—' : f.ig, 'Instagram フォロワー', 'tone5');
+      tile(f.note == null ? '—' : f.note, 'note フォロワー', 'tone2');
+    }
+  }
+  redraw.push(progress);
+
+  // ── 今日 ─────────────────────────────
+  var td = md(DATA.today || DATA.builtAt.slice(0, 10));
+  document.getElementById('today-d').textContent = td.m + '月' + td.d + '日';
+  document.getElementById('today-w').textContent = td.w + '曜日';
+  function jump(cid){
+    var target = document.getElementById(cid);
+    if (!target) return;
+    if (target.style.display === 'none') setFilter('all');
+    target.scrollIntoView({behavior:'smooth', block:'start'});
+    target.classList.add('flash');
+    setTimeout(function(){ target.classList.remove('flash'); }, 1800);
+  }
   var todoList = document.getElementById('todo-list');
   (DATA.todo || []).forEach(function(t){
     var li = el('li');
@@ -709,26 +799,19 @@ footer{margin-top:40px; padding-top:16px; border-top:1px solid var(--line);
     if (t.cid && document.getElementById(t.cid)) {
       var a = el('a', null, t.title);
       a.href = '#' + t.cid;
-      a.addEventListener('click', function(e){
-        e.preventDefault();
-        var target = document.getElementById(t.cid);
-        target.scrollIntoView({behavior:'smooth', block:'start'});
-        target.classList.add('flash');
-        setTimeout(function(){ target.classList.remove('flash'); }, 1800);
-      });
+      a.addEventListener('click', function(e){ e.preventDefault(); jump(t.cid); });
       head.appendChild(a);
     } else {
       head.appendChild(document.createTextNode(t.title));
     }
     head.appendChild(el('span', 'who', '担当：' + t.who));
     li.appendChild(head);
-    li.appendChild(el('span', 'd', t.detail));
+    li.appendChild(el('span', 'dd', t.detail));
     todoList.appendChild(li);
   });
-  if (!todoList.children.length) document.getElementById('todo').style.display = 'none';
-  // 「まだ投稿されていない Instagram」は台帳を元に一番上へ出している。
-  // デスクで URL が保存されたら（共有の記録が来たら）、見出しを直していちばん下へ回す（2026-10-03 本人指摘）。
-  // 台帳への転記は毎日の作業でおこなうので、それまでの間も上に居座らないようにする。
+  if (!todoList.children.length) document.getElementById('todaybar').style.display = 'none';
+
+  // 「まだ投稿されていない Instagram」は、デスクで URL が保存されたら見出しを直していちばん下へ回す
   function settleBacklog(){
     Array.prototype.forEach.call(document.querySelectorAll('section.day[data-backlog="1"]'), function(s){
       var cards = s.querySelectorAll('.card');
@@ -741,32 +824,38 @@ footer{margin-top:40px; padding-top:16px; border-top:1px solid var(--line);
     });
   }
   redraw.push(settleBacklog);
-  settleBacklog();
-  dock();
-  pull();          // 共有されている記録を読み込む（endpoint が空なら何もしない）
+  redraw.push(function(){ applyFilter(); });
 
-  var todoOnly = false;
-  document.getElementById('f-todo').addEventListener('click', function(){
-    todoOnly = !todoOnly;
-    this.setAttribute('aria-pressed', todoOnly ? 'true' : 'false');
-    this.textContent = todoOnly ? 'すべて表示' : '未投稿だけ表示';
-    Array.prototype.forEach.call(document.querySelectorAll('.card'), function(c){
-      c.style.display = (todoOnly && c.dataset.done === '1') ? 'none' : '';
-    });
-    Array.prototype.forEach.call(document.querySelectorAll('.day'), function(s){
-      var any = Array.prototype.some.call(s.querySelectorAll('.card'), function(c){
-        return c.style.display !== 'none';
-      });
+  // ── 表示の切り替え（タブ） ─────────────────────────────
+  var filter = 'todo';
+  function applyFilter(){
+    allCards().forEach(function(c){ c.style.display = (filter === 'todo' && c.dataset.done === '1') ? 'none' : ''; });
+    Array.prototype.forEach.call(document.querySelectorAll('section.day'), function(s){
+      var any = Array.prototype.some.call(s.querySelectorAll('.card'), function(c){ return c.style.display !== 'none'; });
       s.style.display = any ? '' : 'none';
     });
+  }
+  function setFilter(f){
+    filter = f;
+    Array.prototype.forEach.call(document.querySelectorAll('#tabs button[data-f]'), function(b){
+      b.classList.toggle('on', b.dataset.f === f);
+    });
+    applyFilter();
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('#tabs button[data-f]'), function(b){
+    b.addEventListener('click', function(){ setFilter(b.dataset.f); });
   });
-
   document.getElementById('f-theme').addEventListener('click', function(){
-    var now = document.documentElement.getAttribute('data-theme');
-    var dark = now ? now === 'dark'
-      : window.matchMedia('(prefers-color-scheme: dark)').matches;
+    var cur = document.documentElement.getAttribute('data-theme');
+    var dark = cur ? cur === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
     document.documentElement.setAttribute('data-theme', dark ? 'light' : 'dark');
   });
+
+  settleBacklog();
+  progress();
+  applyFilter();
+  dock();
+  pull();          // 共有されている記録を読み込む（endpoint が空なら何もしない）
 })();
 </script>
 </body>
