@@ -495,7 +495,10 @@ dialog img{width:100%;height:auto;border-radius:18px;display:block}
     var c = el('article', 'card ' + tone(item.key) + (imgs.length ? '' : ' noimg') + (isDone(item) ? ' done' : ''));
     c.dataset.done = isDone(item) ? '1' : '0';
     c.id = 'c-' + item.date + '-' + item.key;
-    if (item.date === DATA.today && !isDone(item)) c.classList.add('now');
+    // 表示の日付は「投稿予定日」（出し忘れは build.py の reschedule が今日以降に振り直す）。
+    // URL保存の鍵になる item.date（作成日）は変えない
+    var slot = item.slot || item.date;
+    if (slot === DATA.today && !isDone(item)) c.classList.add('now');
 
     if (imgs.length) {
       var th = el('button', 'thumb');
@@ -510,12 +513,16 @@ dialog img{width:100%;height:auto;border-radius:18px;display:block}
     c.appendChild(col);
 
     var top = el('div', 'cardtop');
-    var dd = md(item.date);
-    var dc = el('span', 'datechip' + (item.date === DATA.today ? ' today' : ''));
+    var dd = md(slot);
+    var dc = el('span', 'datechip' + (slot === DATA.today ? ' today' : ''));
     dc.appendChild(document.createTextNode(dd.m + '月' + dd.d + '日'));
-    dc.appendChild(el('small', null, dd.w));
+    dc.appendChild(el('small', null, dd.w + (slot > DATA.today && !isDone(item) ? '　投稿予定' : '')));
     top.appendChild(dc);
-    if (item.date === DATA.today) top.appendChild(el('span', 'todaytag', '今日'));
+    if (slot === DATA.today && !isDone(item)) top.appendChild(el('span', 'todaytag', '今日'));
+    if (slot !== item.date && !isDone(item)) {
+      var mm = md(item.date);
+      top.appendChild(el('span', 'chip c-none', mm.m + '/' + mm.d + '作成から繰り越し'));
+    }
     top.appendChild(el('span', 'chip c-media', item.label));
     top.appendChild(el('span', 'chip ' + (isDone(item) ? 'c-posted' : 'c-hold'),
       isDone(item) ? (item.replyTo ? '送信済み' : '投稿済み') : (item.replyTo ? '未送信' : '未投稿')));

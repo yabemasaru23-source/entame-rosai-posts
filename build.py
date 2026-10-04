@@ -377,6 +377,76 @@ def collect():
     return instagram_backlog(led, oldest) + days   # 出してほしいものを一番上に
 
 
+def posted_dates(led, media):
+    """台帳から、その媒体が実際に公開された日を集める。
+    状態欄の「投稿済 10-03 17:55」の日付を優先し、書いていなければ行の日付を使う。"""
+    year = datetime.now().year
+    out = set()
+    for (date, med), rec in led.items():
+        if med != media or "投稿済" not in rec["status"]:
+            continue
+        m = re.search(r"投稿済\s*(\d{2})-(\d{2})", rec["status"])
+        mmdd = "%s-%s" % m.groups() if m else date
+        out.add(datetime.strptime("%d-%s" % (year, mmdd), "%Y-%m-%d").date())
+    return out
+
+
+def reschedule(days, led):
+    """出し忘れた投稿を、次に出せる日に振り直す（2026-10-03 本人指摘）。
+
+    「9月10日作成　まだ投稿されていない Instagram」が一番上に居座り続け、
+    いつ出すのかが画面のどこにも書かれていなかった。作った日のまま残すのをやめ、
+    未投稿のものは媒体ごとの決まり（X は1日1本、Instagram は前回から1週間あける、
+    @yabemasaru23 は火曜）に沿って、今日以降の「投稿予定日」に並べ直す。
+    ・カードの識別（URL保存の鍵）は作成日のまま変えない。表示の日付だけを動かす
+    ・台帳は作成日の行のまま。照合は本文で行うので（tools/match_published.py）、日付がずれても拾える
+    """
+    today = datetime.now().date()
+    items = [it for d in days for it in d["items"]]
+    done = lambda it: bool(re.search(r"投稿済|送信済", it["status"]))
+    made = lambda it: datetime.strptime(it["date"], "%Y-%m-%d").date()
+    for it in items:
+        it["made"] = it["date"]
+        it["slot"] = it["date"]
+
+    # X（@entame_rosai）：1日1本。今日すでに出ていれば明日から
+    cur = today + timedelta(days=1) if today in posted_dates(led, "X") else today
+    for it in sorted([i for i in items if i["key"] == "x" and not done(i)], key=made):
+        slot = max(cur, made(it))
+        it["slot"] = slot.strftime("%Y-%m-%d")
+        cur = slot + timedelta(days=1)
+
+    # Instagram：前回の公開から7日あける（第2期は週1回）
+    ig_posted = posted_dates(led, "Instagram")
+    cur = max(today, (max(ig_posted) + timedelta(days=7)) if ig_posted else today)
+    for it in sorted([i for i in items if i["key"] == "ig" and not done(i)], key=made):
+        slot = max(cur, made(it))
+        it["slot"] = slot.strftime("%Y-%m-%d")
+        cur = slot + timedelta(days=7)
+
+    # @yabemasaru23：火曜。過ぎたものは次の火曜から1本ずつ
+    cur = today + timedelta(days=(1 - today.weekday()) % 7)
+    for it in sorted([i for i in items if i["key"] == "yabe" and not done(i)], key=made):
+        if made(it) >= today:
+            continue
+        it["slot"] = cur.strftime("%Y-%m-%d")
+        cur += timedelta(days=7)
+
+    # 予定日ごとに並べ直す：今日 → この先（近い順）→ 過去（出したもの・新しい順）
+    by = {}
+    for it in items:
+        by.setdefault(it["slot"], []).append(it)
+    ts = today.strftime("%Y-%m-%d")
+    order = sorted([s for s in by if s >= ts]) + sorted([s for s in by if s < ts], reverse=True)
+    out = []
+    for s in order:
+        d = datetime.strptime(s, "%Y-%m-%d").date()
+        tag = "　今日" if s == ts else ("　投稿予定" if s > ts else "")
+        out.append({"date": s, "label": "%d月%d日（%s）%s" % (d.month, d.day, WEEK[d.weekday()], tag),
+                    "items": by[s]})
+    return out
+
+
 def md(date):
     d = datetime.strptime(date, "%Y-%m-%d").date()
     return "%d/%d（%s）" % (d.month, d.day, WEEK[d.weekday()])
@@ -401,7 +471,7 @@ def todo_list(days, led):
 
     # 1. 今日の X（@entame_rosai）
     for it in items:
-        if it["key"] == "x" and it["date"] == ts and not done(it):
+        if it["key"] == "x" and it["slot"] == ts and not done(it):
             out.append({"due": "今日", "who": "作業者",
                         "title": "X（@entame_rosai）の今日の投稿",
                         "detail": "画像%d枚を添付 → 代替テキストを入れる → 本文を貼る、の順。"
@@ -420,25 +490,23 @@ def todo_list(days, led):
                               "送る前に、左下のアカウントが @entame_rosai か必ず確認。"
                               "期限を過ぎたら送らない。",
                     "cid": cid(it)})
-    # 3. たまっている Instagram（古い順に1本ずつ・週1回）
-    ig = [it for d in days for it in d["items"]
-          if it["key"] == "ig" and it["date"] < ts and not done(it)]
-    ig.sort(key=lambda it: it["date"])
+    # 3. 次の Instagram（予定日は reschedule が前回の公開から7日後に振っている）
+    ig = [it for d in days for it in d["items"] if it["key"] == "ig" and not done(it)]
+    ig.sort(key=lambda it: it["slot"])
     if ig:
         it = ig[0]
-        out.append({"due": "今日" if today.weekday() == 0 else "次の月曜",
+        out.append({"due": "今日" if it["slot"] == ts else md(it["slot"]) + "予定",
                     "who": "作業者",
-                    "title": "Instagram を1本投稿（%s作成の分）" % md(it["date"]),
+                    "title": "Instagram を1本投稿（%s作成の分）" % md(it["made"]),
                     "detail": "画像%d枚をこの順で添付し、1枚ずつ代替テキストを入れる。"
-                              "たまっているのは%d本。古い順に週1回（月曜）。"
+                              "未投稿は%d本。前回の公開から1週間あけて1本ずつ。"
                               % (len(it["images"]), len(ig)),
                     "cid": cid(it)})
     # 4. @yabemasaru23（火曜）。いちばん近い未投稿の1本
-    ya = sorted([it for it in items if it["key"] == "yabe" and not done(it)],
-                key=lambda it: abs((datetime.strptime(it["date"], "%Y-%m-%d").date() - today).days))
+    ya = sorted([it for it in items if it["key"] == "yabe" and not done(it)], key=lambda it: it["slot"])
     if ya:
         it = ya[0]
-        out.append({"due": md(it["date"]) if it["date"] >= ts else "未投稿のまま",
+        out.append({"due": "今日" if it["slot"] == ts else md(it["slot"]) + "予定",
                     "who": "矢部さん",
                     "title": "X（@yabemasaru23）の投稿",
                     "detail": "矢部さん個人のアカウント。実感と違う箇所があれば直してから。",
@@ -494,7 +562,7 @@ def main():
     logo = os.path.join(os.path.dirname(HERE), "assets", "brand", "logo.png")
     if os.path.exists(logo):
         shutil.copy(logo, os.path.join(ASSETS, "logo.png"))
-    days = collect()
+    days = reschedule(collect(), ledger())
     if not days:
         print("output/ に直近%d日分が見つかりません。" % DAYS)
         sys.exit(1)
